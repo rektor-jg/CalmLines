@@ -26,7 +26,12 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({ options, onOpt
     const { label, icon: Icon } = categoryData;
     
     return (
-      <button onClick={() => handleOptionChange('category', name)} disabled={isLoading} className={`flex items-center space-x-3 text-left w-full p-3 rounded-lg transition-all duration-200 disabled:opacity-50 ${options.category === name ? 'bg-black text-white font-semibold' : 'text-gray-700 hover:bg-gray-100'}`}>
+      <button 
+        onClick={() => handleOptionChange('category', name)} 
+        disabled={isLoading} 
+        title={`Wybierz temat: ${label}`}
+        className={`flex items-center space-x-3 text-left w-full p-3 rounded-lg transition-all duration-200 disabled:opacity-50 ${options.category === name ? 'bg-black text-white font-semibold' : 'text-gray-700 hover:bg-gray-100'}`}
+      >
         <Icon className="w-6 h-6" />
         <span>{label}</span>
       </button>
@@ -39,14 +44,26 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({ options, onOpt
         <div className="space-y-3">
           <div className="flex bg-gray-200 rounded-lg p-1">
             {LINE_THICKNESSES.map(thickness => (
-              <button key={thickness} onClick={() => handleOptionChange('lineThickness', thickness)} disabled={isLoading} className={`w-full py-2 text-sm font-semibold rounded-md transition-colors duration-200 disabled:opacity-50 ${options.lineThickness === thickness ? 'bg-white text-black shadow-sm' : 'text-gray-600 hover:bg-gray-50'}`}>
+              <button 
+                key={thickness} 
+                onClick={() => handleOptionChange('lineThickness', thickness)} 
+                disabled={isLoading} 
+                title={`Ustaw grubość linii na: ${thickness}`}
+                className={`w-full py-2 text-sm font-semibold rounded-md transition-colors duration-200 disabled:opacity-50 ${options.lineThickness === thickness ? 'bg-white text-black shadow-sm' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
                 {thickness} Linie
               </button>
             ))}
           </div>
           <div className="flex bg-gray-200 rounded-lg p-1">
             {AGE_GROUPS.map(age => (
-              <button key={age} onClick={() => handleOptionChange('ageGroup', age)} disabled={isLoading} className={`w-full py-2 text-sm font-semibold rounded-md transition-colors duration-200 disabled:opacity-50 ${options.ageGroup === age ? 'bg-white text-black shadow-sm' : 'text-gray-600 hover:bg-gray-50'}`}>
+              <button 
+                key={age} 
+                onClick={() => handleOptionChange('ageGroup', age)} 
+                disabled={isLoading} 
+                title={`Dostosuj poziom trudności dla wieku: ${age}`}
+                className={`w-full py-2 text-sm font-semibold rounded-md transition-colors duration-200 disabled:opacity-50 ${options.ageGroup === age ? 'bg-white text-black shadow-sm' : 'text-gray-600 hover:bg-gray-50'}`}
+              >
                 Wiek {age.replace(' lata', '').replace(' lat', '')}
               </button>
             ))}
@@ -56,7 +73,12 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({ options, onOpt
        <div>
          <div className="space-y-1">
           {MAIN_CATEGORIES.map(name => <CategoryButton key={name} name={name} />)}
-           <button onClick={() => setShowMore(prev => !prev)} disabled={isLoading} className={`flex items-center space-x-3 text-left w-full p-3 rounded-lg transition-all duration-200 disabled:opacity-50 text-gray-700 hover:bg-gray-100`}>
+           <button 
+             onClick={() => setShowMore(prev => !prev)} 
+             disabled={isLoading} 
+             title={showMore ? "Zwiń listę kategorii" : "Rozwiń więcej kategorii"}
+             className={`flex items-center space-x-3 text-left w-full p-3 rounded-lg transition-all duration-200 disabled:opacity-50 text-gray-700 hover:bg-gray-100`}
+           >
             <ChevronDown className={`w-6 h-6 transition-transform ${showMore ? 'rotate-180' : ''}`} />
             <span>Więcej...</span>
           </button>

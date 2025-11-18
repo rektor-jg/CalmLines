@@ -66,11 +66,19 @@ export const ResultDisplay: React.FC<ResultDisplayProps> = ({ isLoading, error, 
       <div className="w-full space-y-4 animate-fade-in-up">
         <img src={activeImage} alt="Wygenerowana kolorowanka" className="w-full h-auto rounded-2xl border-4 border-white shadow-xl" />
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-2">
-          <button onClick={() => handleDownload('png', activeImage)} className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-2.5 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black backdrop-blur-md border border-gray-300 shadow-md">
+          <button 
+            onClick={() => handleDownload('png', activeImage)} 
+            title="Zapisz kolorowankę jako plik obrazka (PNG)"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-2.5 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black backdrop-blur-md border border-gray-300 shadow-md"
+          >
             <Download className="w-5 h-5" />
             <span>Pobierz Obrazek</span>
           </button>
-          <button onClick={() => handleDownload('pdf', activeImage)} className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-2.5 bg-black text-white font-semibold rounded-lg shadow-lg hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
+          <button 
+            onClick={() => handleDownload('pdf', activeImage)} 
+            title="Pobierz gotowy plik PDF do wydruku (A4)"
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-2.5 bg-black text-white font-semibold rounded-lg shadow-lg hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+          >
             <Printer className="w-5 h-5" />
             <span>Pobierz do Druku</span>
           </button>

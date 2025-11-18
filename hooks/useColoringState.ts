@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useRef } from 'react';
 import { OptionValues } from '../types';
 import { DAILY_LIMIT, ALL_PROMPTS, CATEGORY_PROMPTS } from '../constants';
@@ -72,7 +71,7 @@ export const useColoringState = () => {
       setGenerationCount(prev => prev + 1);
     } catch (err) {
       console.error(err);
-      setError('Wystąpił błąd podczas generowania obrazka. Spróbuj ponownie.');
+      setError('Ojej! Coś poszło nie tak podczas rysowania. Sprawdź połączenie lub spróbuj zmienić opis.');
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +111,7 @@ export const useColoringState = () => {
         setGenerationCount(prev => prev + 1);
     } catch (err) {
         console.error(err);
-        setError('Wystąpił błąd podczas przetwarzania obrazka. Spróbuj ponownie.');
+        setError('Nie udało się zamienić tego zdjęcia w kolorowankę. Upewnij się, że zdjęcie jest wyraźne i spróbuj ponownie.');
     } finally {
         setIsLoading(false);
         handleClearUpload();
