@@ -4,6 +4,14 @@ export type Category = 'Zwierzęta' | 'Pojazdy' | 'Fantazja' | 'Natura' | 'Jedze
 export type LineThickness = 'Grube' | 'Cienkie';
 export type AgeGroup = '2-4 lata' | '5-7 lat' | '8+ lat';
 
+const CATEGORY_STYLES: Record<Category, string> = {
+  'Zwierzęta': 'uroczy, kreskówkowy styl',
+  'Pojazdy': 'prosty, dynamiczny styl',
+  'Fantazja': 'magiczny, baśniowy, whimsical',
+  'Natura': 'spokojny, organiczny styl',
+  'Jedzenie': 'apetyczny, zabawny styl',
+};
+
 export async function generateImage(
     userPrompt: string,
     category: Category,
@@ -16,44 +24,40 @@ export async function generateImage(
   const sanitizedPrompt = userPrompt.trim().toLowerCase();
   
   let subjectPrompt: string;
-  // Special case for "kot" to ensure it's a simple cat
   if (sanitizedPrompt === 'kot') {
-      subjectPrompt = 'a simple, cute cat';
+      subjectPrompt = 'prosty, uroczy kot';
   } else {
       subjectPrompt = userPrompt.trim();
   }
   
-  // Build a specialized prompt based on all inputs
-  const promptModifiers: string[] = [
-    'coloring book page for a child',
-    'fun and cute style',
-  ];
-  
-  // Add category context
-  promptModifiers.push(`in the theme of ${category.toLowerCase()}`);
-  
-  // Add line thickness context
-  if (lineThickness === 'Grube') {
-    promptModifiers.push('extra thick bold black outlines', 'chunky lines');
-  } else {
-    promptModifiers.push('thin clean black outlines', 'delicate lines');
-  }
+  const categoryStyle = CATEGORY_STYLES[category];
 
-  // Add age group context for complexity
+  let sceneDescription: string;
   switch (ageGroup) {
     case '2-4 lata':
-        promptModifiers.push('extremely simple shapes', 'very large areas to color', 'minimal details', 'perfect for a toddler');
+        sceneDescription = `pojedynczy, bardzo prosty rysunek obiektu: ${subjectPrompt}. Scena powinna mieć ekstremalnie proste kształty i bardzo duże, łatwe do pokolorowania obszary.`;
         break;
     case '5-7 lat':
-        promptModifiers.push('clear outlines', 'moderate details', 'charming and simple scene', 'suitable for a young child');
+        sceneDescription = `urocza, prosta scena przedstawiająca: ${subjectPrompt}. Powinna mieć wyraźne kontury i umiarkowaną ilość detali.`;
         break;
     case '8+ lat':
-        promptModifiers.push('more complex scene', 'finer details', 'intricate patterns', 'challenging for an older child');
+    default:
+        sceneDescription = `szczegółowa i wciągająca scena z: ${subjectPrompt}. Może zawierać drobniejsze detale i bardziej złożone tło.`;
         break;
   }
-  
-  // A robust prompt designed to create clean, isolated coloring pages.
-  const finalPrompt = `${promptModifiers.join(', ')}, subject: ${subjectPrompt}, isolated on a solid white background, no background details, no shadows, no text, vector style`;
+
+  const lineStyle = lineThickness === 'Grube' 
+    ? 'Rysunek musi mieć bardzo grube, wyraźne, czarne kontury.' 
+    : 'Rysunek musi mieć cienkie, czyste, czarne kontury.';
+
+  const finalPrompt = `
+    Urocza strona z kolorowanki dla dziecka.
+    Styl: ${categoryStyle}.
+    Głównym tematem jest ${sceneDescription}
+    ${lineStyle}
+    Całość musi być izolowana na idealnie białym tle. Bez żadnych cieni, dodatkowych detali w tle, tekstur czy tekstu. Tylko czyste linie. Styl wektorowy.
+  `.trim().replace(/\s+/g, ' ');
+
 
   try {
     const response = await ai.models.generateContent({
@@ -66,7 +70,7 @@ export async function generateImage(
         ],
       },
       config: {
-          responseModalities: [Modality.IMAGE], // Must be an array with a single `Modality.IMAGE` element.
+          responseModalities: [Modality.IMAGE],
       },
     });
 
