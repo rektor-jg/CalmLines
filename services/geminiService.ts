@@ -1,16 +1,7 @@
+
 import { GoogleGenAI, Modality } from "@google/genai";
-
-export type Category = 'Zwierzęta' | 'Pojazdy' | 'Fantazja' | 'Natura' | 'Jedzenie';
-export type LineThickness = 'Grube' | 'Cienkie';
-export type AgeGroup = '2-4 lata' | '5-7 lat' | '8+ lat';
-
-const CATEGORY_STYLES: Record<Category, string> = {
-  'Zwierzęta': 'uroczy, kreskówkowy styl',
-  'Pojazdy': 'prosty, dynamiczny styl',
-  'Fantazja': 'magiczny, baśniowy, whimsical',
-  'Natura': 'spokojny, organiczny styl',
-  'Jedzenie': 'apetyczny, zabawny styl',
-};
+import { Category, LineThickness, AgeGroup } from '../types';
+import { CATEGORY_STYLES } from '../constants';
 
 export async function generateImage(
     userPrompt: string,
@@ -18,7 +9,6 @@ export async function generateImage(
     lineThickness: LineThickness,
     ageGroup: AgeGroup
 ): Promise<string> {
-  // API key is automatically sourced from process.env.API_KEY
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
   const sanitizedPrompt = userPrompt.trim().toLowerCase();
@@ -51,11 +41,7 @@ export async function generateImage(
     : 'Rysunek musi mieć cienkie, czyste, czarne kontury.';
 
   const finalPrompt = `
-    Urocza strona z kolorowanki dla dziecka.
-    Styl: ${categoryStyle}.
-    Głównym tematem jest ${sceneDescription}
-    ${lineStyle}
-    Całość musi być izolowana na idealnie białym tle. Bez żadnych cieni, dodatkowych detali w tle, tekstur czy tekstu. Tylko czyste linie. Styl wektorowy.
+    Strona z kolorowanki dla dziecka. ${categoryStyle} Głównym tematem jest ${sceneDescription}. ${lineStyle} Całość musi być izolowana na idealnie białym tle. Bez żadnych cieni, dodatkowych detali w tle, tekstur czy tekstu. Tylko czyste, czarne linie. Styl wektorowy.
   `.trim().replace(/\s+/g, ' ');
 
 
@@ -71,6 +57,7 @@ export async function generateImage(
       },
       config: {
           responseModalities: [Modality.IMAGE],
+          // Removed seed parameter to ensure stability
       },
     });
 
@@ -86,5 +73,57 @@ export async function generateImage(
   } catch (error) {
     console.error("Error generating image with Gemini:", error);
     throw new Error("Failed to generate image.");
+  }
+}
+
+export async function generateColoringPageFromImage(
+    base64Image: string,
+    mimeType: string,
+    lineThickness: LineThickness,
+    ageGroup: AgeGroup
+): Promise<string> {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+
+  const ageModifier = ageGroup === '2-4 lata' 
+    ? 'bardzo prosty z dużymi, łatwymi do pokolorowania obszarami' 
+    : (ageGroup === '5-7 lat' ? 'prosty z wyraźnymi detalami' : 'ze szczegółami i drobniejszymi elementami');
+
+  const lineModifier = lineThickness === 'Grube' ? 'grube, wyraźne czarne kontury' : 'cienkie, czyste czarne kontury';
+
+  const finalPrompt = `
+    Przekształć ten obrazek w stronę z kolorowanki dla dziecka. Styl rysunku: ${ageModifier}. Stwórz ${lineModifier}. Usuń wszystkie kolory, cienie i złożone tekstury. Wynik musi zawierać wyłącznie czarne kontury na idealnie białym tle. Czysty, wektorowy styl.
+  `.trim().replace(/\s+/g, ' ');
+
+  const imagePart = {
+    inlineData: {
+      mimeType: mimeType,
+      data: base64Image,
+    },
+  };
+  const textPart = {
+    text: finalPrompt
+  };
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: { parts: [imagePart, textPart] },
+      config: {
+          responseModalities: [Modality.IMAGE],
+          // Removed seed parameter to ensure stability
+      },
+    });
+
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
+    }
+    
+    throw new Error("API did not return any images from the uploaded file.");
+
+  } catch (error) {
+    console.error("Error processing image with Gemini:", error);
+    throw new Error("Failed to process image.");
   }
 }
