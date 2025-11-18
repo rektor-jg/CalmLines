@@ -20,12 +20,20 @@
 }
 </script>
   <style>
+    :root {
+      --theme-classic: #000000;
+      --theme-lang: #4f46e5;
+      --theme-math: #059669;
+      --theme-color: var(--theme-classic);
+      --theme-bg: #ffffff;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      background-color: var(--theme-bg);
     }
   </style>
 </head>
-  <body class="bg-white">
+  <body class="bg-[var(--theme-bg)] transition-colors duration-500">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

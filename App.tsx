@@ -1,17 +1,20 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { X, SlidersHorizontal, UploadCloud } from 'lucide-react';
 import { useColoringState } from './hooks/useColoringState';
+import { useTheme } from './hooks/useTheme';
 import { PromptInput } from './components/PromptInput';
 import { ColoringOptions } from './components/ColoringOptions';
 import { ResultDisplay } from './components/ResultDisplay';
 import { InspirationSection } from './components/InspirationSection';
 import { LimitModal } from './components/LimitModal';
+import { ModeSelector } from './components/ModeSelector';
+import { OnboardingTutorial } from './components/OnboardingTutorial';
 
 const App: React.FC = () => {
   const {
     prompt, setPrompt,
-    options, setOptions,
+    options, setOptions, setMode,
     activeImage,
     history,
     isLoading,
@@ -28,19 +31,51 @@ const App: React.FC = () => {
     handleExampleClick,
     handleHistoryClick,
     handleUploadClick,
-    handleFileChange
+    handleFileChange,
+    // Booklet state
+    isSelectionMode,
+    toggleSelectionMode,
+    selectedImages,
+    handleDownloadBooklet
   } = useColoringState();
 
   const mainContentRef = useRef<HTMLDivElement>(null);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Apply theme variables based on mode
+  useTheme(options.educationalMode);
+
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('hasSeenTutorial_v1');
+    if (!hasSeenTutorial) {
+      setShowTutorial(true);
+    }
+  }, []);
+
+  const handleTutorialComplete = () => {
+    localStorage.setItem('hasSeenTutorial_v1', 'true');
+    setShowTutorial(false);
+  };
 
   const shouldShowInspiration = !isLoading && !error && !activeImage;
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden text-black">
+    <div className="relative min-h-screen overflow-x-hidden text-black bg-[var(--theme-bg)] transition-colors duration-500">
         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/jpeg, image/png, image/webp" />
         
+        {showTutorial && <OnboardingTutorial onComplete={handleTutorialComplete} />}
+
+        {/* Mobile Backdrop */}
+        {isPanelOpen && (
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
+            onClick={() => setIsPanelOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
         {/* Side Panel */}
-        <aside className={`fixed top-0 left-0 z-40 w-80 h-full bg-white/80 backdrop-blur-xl border-r border-gray-200/80 shadow-2xl transition-transform duration-300 ease-in-out ${isPanelOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside className={`fixed top-0 left-0 z-50 w-80 h-full bg-white/90 backdrop-blur-xl border-r border-gray-200/80 shadow-2xl transition-transform duration-300 ease-in-out ${isPanelOpen ? 'translate-x-0' : '-translate-x-full'}`}>
             <div className="h-full p-6 overflow-y-auto">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-black">Opcje</h2>
@@ -53,23 +88,39 @@ const App: React.FC = () => {
                   onOptionsChange={setOptions}
                   isLoading={isLoading}
                   history={history}
-                  onHistoryClick={(url) => { handleHistoryClick(url); if(mainContentRef.current) mainContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
+                  onHistoryClick={(url) => { handleHistoryClick(url); if(!isSelectionMode && mainContentRef.current) mainContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
+                  onPremiumClick={() => setIsLimitModalOpen(true)}
+                  isSelectionMode={isSelectionMode}
+                  toggleSelectionMode={toggleSelectionMode}
+                  selectedImages={selectedImages}
+                  onDownloadBooklet={handleDownloadBooklet}
                 />
             </div>
         </aside>
 
-      {/* Main Content */}
-      <main ref={mainContentRef} className={`w-full min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 transition-transform duration-300 ease-in-out ${isPanelOpen ? 'lg:translate-x-40' : 'lg:translate-x-0'}`}>
-        <div className="fixed top-6 left-6 z-30 flex items-center space-x-2">
-            <button onClick={() => setIsPanelOpen(true)} title="Opcje i historia" className="p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-gray-700 hover:text-black hover:bg-white transition-all">
+      {/* Floating Buttons (Settings & Upload) */}
+      <div className={`fixed top-6 z-30 flex items-center space-x-2 transition-all duration-300 ease-in-out ${isPanelOpen ? 'left-6 lg:left-[22rem]' : 'left-6'}`}>
+          {!isPanelOpen && (
+            <button onClick={() => setIsPanelOpen(true)} title="Opcje i historia" className="p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-gray-700 hover:text-black hover:bg-white transition-all hover:scale-105">
                 <SlidersHorizontal />
             </button>
-            <button onClick={handleUploadClick} title="Stwórz kolorowankę ze zdjęcia" className="p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-gray-700 hover:text-black hover:bg-white transition-all">
-                <UploadCloud />
-            </button>
+          )}
+          <button onClick={handleUploadClick} title="Stwórz kolorowankę ze zdjęcia" className="p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-gray-700 hover:text-black hover:bg-white transition-all hover:scale-105">
+              <UploadCloud />
+          </button>
+      </div>
+
+      {/* Main Content */}
+      <main 
+        ref={mainContentRef} 
+        className={`w-full min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8 transition-all duration-300 ease-in-out ${isPanelOpen ? 'lg:pl-80' : 'lg:pl-0'}`}
+      >
+
+        <div className="w-full max-w-4xl mt-16 mb-4 sm:mt-4">
+           <ModeSelector currentMode={options.educationalMode} onModeChange={setMode} />
         </div>
 
-        <div className="w-full max-w-2xl flex-grow flex items-center justify-center">
+        <div className="w-full max-w-2xl flex-grow flex items-center justify-center min-h-[40vh]">
           <div className="w-full">
             <ResultDisplay
               isLoading={isLoading}
@@ -81,7 +132,7 @@ const App: React.FC = () => {
           </div>
         </div>
         
-        <div className="w-full max-w-3xl mt-8 flex-shrink-0">
+        <div className="w-full max-w-3xl mt-8 flex-shrink-0 mb-8 relative z-20">
           <PromptInput
             prompt={prompt}
             onPromptChange={setPrompt}
@@ -94,8 +145,12 @@ const App: React.FC = () => {
         </div>
         
          {shouldShowInspiration && (
-              <div className="w-full max-w-4xl mt-8">
-                <InspirationSection onExampleClick={handleExampleClick} isLoading={isLoading} />
+              <div className="w-full max-w-4xl mt-4 mb-12">
+                <InspirationSection 
+                  onExampleClick={handleExampleClick} 
+                  isLoading={isLoading} 
+                  mode={options.educationalMode}
+                />
               </div>
          )}
 
@@ -107,7 +162,9 @@ const App: React.FC = () => {
           from { opacity: 0; transform: translateY(20px); } 
           to { opacity: 1; transform: translateY(0); } 
         }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
       `}</style>
     </div>
   );

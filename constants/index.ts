@@ -1,10 +1,11 @@
-
+import React from 'react';
 import { 
   PawPrint, Truck, Sparkles, Sprout, CakeSlice, 
   Bot, Castle, Rocket, Fish, LayoutGrid,
-  Bike, Orbit, HardHat
+  Bike, Orbit, HardHat,
+  BookA, Calculator, Palette, Apple, Dog, Hash
 } from 'lucide-react';
-import { Category, AgeGroup, LineThickness } from '../types';
+import { Category, AgeGroup, LineThickness, EducationalMode, ModeConfig } from '../types';
 
 export const DAILY_LIMIT = 4;
 export const SUBSCRIPTION_URL = 'https://example.com/subscribe';
@@ -20,14 +21,60 @@ export const CATEGORY_PROMPTS: Record<Exclude<Category, 'Wszystko'>, string[]> =
   'Zawody': ['kucharz żonglujący warzywami', 'naukowiec z szalonymi włosami i miksturami', 'budowniczy konstruujący wieżę z klocków LEGO', 'strażak ratujący kota z drzewa', 'ogrodnik rozmawiający z kwiatami'],
 };
 
+export const LANGUAGE_PROMPTS: string[] = [
+  'Kot', 'Pies', 'Dom', 'Jabłko', 'Samochód', 'Drzewo', 'Słońce', 'Księżyc', 'Ryba', 'Ptak', 'Kwiat', 'Piłka', 'Lody', 'Zegar', 'Klucz'
+];
+
+export const MATH_PROMPTS: string[] = [
+  '3 jabłka', '5 balonów', '2 koty', '4 samochody', '1 słońce', '6 motyli', '3 kaczki', '2 domki', '5 gwiazdek', '4 cukierki'
+];
+
 export const ALL_PROMPTS = Object.values(CATEGORY_PROMPTS).flat();
 
-export const EXAMPLE_COLORINGS = [
-  { label: 'Wesoły robot', prompt: 'wesoły robot bawiący się z psem', icon: Bot },
-  { label: 'Zamek na chmurze', prompt: 'zamek księżniczki na chmurze', icon: Castle },
-  { label: 'Kosmiczna podróż', prompt: 'kosmiczny statek lecący między planetami', icon: Rocket },
-  { label: 'Podwodny świat', prompt: 'podwodny świat z kolorowymi rybkami', icon: Fish },
+export const MODES_CONFIG: ModeConfig[] = [
+  { 
+    id: 'Brak', 
+    label: 'Klasyczny', 
+    icon: Palette, 
+    themeColor: 'var(--theme-classic)',
+    description: 'Standardowe kolorowanki'
+  },
+  { 
+    id: 'Języki', 
+    label: 'Języki', 
+    icon: BookA, 
+    themeColor: 'var(--theme-lang)',
+    description: 'Nauka słówek PL/ENG'
+  },
+  { 
+    id: 'Matematyka', 
+    label: 'Matematyka', 
+    icon: Calculator, 
+    themeColor: 'var(--theme-math)',
+    description: 'Działania i cyfry'
+  }
 ];
+
+export const EXAMPLE_COLORINGS: Record<EducationalMode, { label: string, prompt: string, icon: any }[]> = {
+  'Brak': [
+    { label: 'Wesoły robot', prompt: 'wesoły robot bawiący się z psem', icon: Bot },
+    { label: 'Zamek na chmurze', prompt: 'zamek księżniczki na chmurze', icon: Castle },
+    { label: 'Kosmiczna podróż', prompt: 'kosmiczny statek lecący między planetami', icon: Rocket },
+    { label: 'Podwodny świat', prompt: 'podwodny świat z kolorowymi rybkami', icon: Fish },
+  ],
+  'Języki': [
+    { label: 'Pies / Dog', prompt: 'wesoły pies biegnący za piłką', icon: Dog },
+    { label: 'Dom / House', prompt: 'mały domek z ogródkiem', icon: Castle },
+    { label: 'Jabłko / Apple', prompt: 'duże czerwone jabłko na stole', icon: Apple },
+    { label: 'Kot / Cat', prompt: 'kot śpiący na poduszce', icon: PawPrint },
+  ],
+  'Matematyka': [
+    { label: 'Dodawanie', prompt: 'dwie wesołe żabki na liściu lilii wodnej', icon: Calculator },
+    { label: 'Liczby 1-5', prompt: 'pięć balonów lecących w niebo', icon: Hash },
+    { label: 'Proste figury', prompt: 'robot zbudowany z kwadratów i trójkątów', icon: Bot },
+    { label: 'Odejmowanie', prompt: 'trzy ptaszki siedzące na gałęzi', icon: Sprout },
+  ]
+};
 
 export const CATEGORIES_DATA: { name: Category, label: string, icon: React.FC<any> }[] = [
     { name: 'Wszystko', label: 'Wszystko', icon: LayoutGrid },
@@ -48,13 +95,13 @@ export const AGE_GROUPS: AgeGroup[] = ['2-4 lata', '5-7 lat', '8+ lat'];
 export const LINE_THICKNESSES: LineThickness[] = ['Grube', 'Cienkie'];
 
 export const CATEGORY_STYLES: Record<Category, string> = {
-  'Wszystko': 'Styl: czysta, urocza ilustracja. Powinien być prosty i łatwy do zrozumienia dla dzieci.',
-  'Zwierzęta': 'Styl: urocza, kreskówkowa ilustracja zwierząt. Postacie powinny mieć duże oczy i przyjazne miny. Scena powinna być zabawna i pełna życia.',
-  'Pojazdy': 'Styl: prosta, dynamiczna ilustracja pojazdów z zaokrąglonymi krawędziami. Unikaj skomplikowanych mechanizmów. Pojazdy mogą mieć zabawne cechy, jak oczy lub uśmiechy.',
-  'Fantazja': 'Styl: baśniowa ilustracja, magiczny, pełen detali. Elementy powinny mieć delikatne, zakrzywione linie. Scena powinna być pełna uroku i tajemniczości.',
-  'Natura': 'Styl: spokojna, organiczna ilustracja natury. Formy powinny być uproszczone i stylizowane. Paleta barw (w domyśle) powinna być harmonijna i inspirowana naturą.',
-  'Jedzenie': 'Styl: apetyczna, zabawna ilustracja jedzenia. Postacie z jedzenia (np. chodząca pizza) powinny być śmieszne i przyjazne. Używaj przesadnych kształtów.',
-  'Sport': 'Styl: dynamiczna, pełna energii ilustracja sportowa. Postacie w ruchu, z przesadzoną ekspresją. Scena powinna oddawać radość z aktywności fizycznej.',
-  'Kosmos': 'Styl: kosmiczna, futurystyczna ilustracja z przyjaznymi kosmitami i planetami. Statki kosmiczne powinny mieć zabawne, nietypowe kształty. Tło może zawierać urocze gwiazdki i mgławice.',
-  'Zawody': 'Styl: przyjazna, czytelna ilustracja przedstawiająca różne zawody. Postacie powinny być uśmiechnięte i przedstawione w humorystyczny, uproszczony sposób podczas wykonywania swojej pracy.',
+  'Wszystko': 'Style: clean, cute illustration. Simple and easy to understand for children.',
+  'Zwierzęta': 'Style: cute, cartoon animal illustration. Characters should have big eyes and friendly expressions. The scene should be fun and lively.',
+  'Pojazdy': 'Style: simple, dynamic vehicle illustration with rounded edges. Avoid complex mechanisms. Vehicles can have fun features like eyes or smiles.',
+  'Fantazja': 'Style: fairytale illustration, magical, full of details. Elements should have soft, curved lines. The scene should be charming and mysterious.',
+  'Natura': 'Style: calm, organic nature illustration. Forms should be simplified and stylized. Harmonious composition inspired by nature.',
+  'Jedzenie': 'Style: appetizing, funny food illustration. Food characters (e.g., walking pizza) should be funny and friendly. Use exaggerated shapes.',
+  'Sport': 'Style: dynamic, energetic sports illustration. Characters in motion, with exaggerated expressions. The scene should capture the joy of physical activity.',
+  'Kosmos': 'Style: cosmic, futuristic illustration with friendly aliens and planets. Spaceships should have funny, unusual shapes. Background can contain cute stars.',
+  'Zawody': 'Style: friendly, readable illustration depicting different professions. Characters should be smiling and presented in a humorous, simplified way while working.',
 };

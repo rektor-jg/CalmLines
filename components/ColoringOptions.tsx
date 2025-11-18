@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { OptionValues, Category } from '../types';
 import { CATEGORIES_DATA, MAIN_CATEGORIES, MORE_CATEGORIES, AGE_GROUPS, LINE_THICKNESSES } from '../constants';
 import { HistorySection } from './HistorySection';
@@ -11,97 +11,150 @@ interface ColoringOptionsProps {
   isLoading: boolean;
   history: string[];
   onHistoryClick: (imageUrl: string) => void;
+  onPremiumClick: () => void;
+  isSelectionMode: boolean;
+  toggleSelectionMode: () => void;
+  selectedImages: string[];
+  onDownloadBooklet: () => void;
 }
 
-export const ColoringOptions: React.FC<ColoringOptionsProps> = ({ options, onOptionsChange, isLoading, history, onHistoryClick }) => {
+export const ColoringOptions: React.FC<ColoringOptionsProps> = ({ 
+  options, 
+  onOptionsChange, 
+  isLoading, 
+  history, 
+  onHistoryClick, 
+  onPremiumClick,
+  isSelectionMode,
+  toggleSelectionMode,
+  selectedImages,
+  onDownloadBooklet
+}) => {
   const [showMore, setShowMore] = useState(false);
 
   const handleOptionChange = <K extends keyof OptionValues>(key: K, value: OptionValues[K]) => {
     onOptionsChange(prev => ({ ...prev, [key]: value }));
   };
 
-  const CategoryButton = ({ name }: { name: Category }) => {
+  // Helper for rendering category cards
+  const renderCategoryCard = (name: Category) => {
     const categoryData = CATEGORIES_DATA.find(c => c.name === name);
     if (!categoryData) return null;
     const { label, icon: Icon } = categoryData;
+    const isActive = options.category === name;
     
     return (
       <button 
+        key={name}
         onClick={() => handleOptionChange('category', name)} 
         disabled={isLoading} 
-        title={`Wybierz temat: ${label}`}
-        className={`flex items-center space-x-3 text-left w-full p-3 rounded-lg transition-all duration-200 disabled:opacity-50 ${options.category === name ? 'bg-black text-white font-semibold' : 'text-gray-700 hover:bg-gray-100'}`}
+        title={label}
+        className={`
+          flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 group
+          ${isActive 
+            ? 'bg-black text-white border-black shadow-md transform scale-105' 
+            : 'bg-white text-gray-600 border-gray-100 hover:border-gray-300 hover:bg-gray-50'}
+        `}
       >
-        <Icon className="w-6 h-6" />
-        <span>{label}</span>
+        <Icon className={`w-6 h-6 mb-1.5 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+        <span className="text-[10px] font-medium uppercase tracking-wide">{label}</span>
       </button>
     );
   };
 
   return (
-    <div className="space-y-6">
-       <div>
-        <div className="space-y-3">
-          <div className="flex bg-gray-200 rounded-lg p-1">
-            {LINE_THICKNESSES.map(thickness => (
-              <button 
-                key={thickness} 
-                onClick={() => handleOptionChange('lineThickness', thickness)} 
-                disabled={isLoading} 
-                title={`Ustaw grubość linii na: ${thickness}`}
-                className={`w-full py-2 text-sm font-semibold rounded-md transition-colors duration-200 disabled:opacity-50 ${options.lineThickness === thickness ? 'bg-white text-black shadow-sm' : 'text-gray-600 hover:bg-gray-50'}`}
-              >
-                {thickness} Linie
-              </button>
-            ))}
-          </div>
-          <div className="flex bg-gray-200 rounded-lg p-1">
-            {AGE_GROUPS.map(age => (
-              <button 
-                key={age} 
-                onClick={() => handleOptionChange('ageGroup', age)} 
-                disabled={isLoading} 
-                title={`Dostosuj poziom trudności dla wieku: ${age}`}
-                className={`w-full py-2 text-sm font-semibold rounded-md transition-colors duration-200 disabled:opacity-50 ${options.ageGroup === age ? 'bg-white text-black shadow-sm' : 'text-gray-600 hover:bg-gray-50'}`}
-              >
-                Wiek {age.replace(' lata', '').replace(' lat', '')}
-              </button>
-            ))}
-          </div>
-        </div>
-       </div>
-       <div>
-         <div className="space-y-1">
-          {MAIN_CATEGORIES.map(name => <CategoryButton key={name} name={name} />)}
-           <button 
-             onClick={() => setShowMore(prev => !prev)} 
-             disabled={isLoading} 
-             title={showMore ? "Zwiń listę kategorii" : "Rozwiń więcej kategorii"}
-             className={`flex items-center space-x-3 text-left w-full p-3 rounded-lg transition-all duration-200 disabled:opacity-50 text-gray-700 hover:bg-gray-100`}
-           >
-            <ChevronDown className={`w-6 h-6 transition-transform ${showMore ? 'rotate-180' : ''}`} />
-            <span>Więcej...</span>
-          </button>
-          {showMore && (
-            <div className="pl-4 pt-1 space-y-1 border-l-2 border-gray-200 animate-fade-in-down">
-              {MORE_CATEGORIES.map(name => <CategoryButton key={name} name={name} />)}
+    <div className="flex flex-col h-full pb-20"> {/* Added padding for scrolling */}
+       
+       {/* Configuration Section */}
+       <div className="space-y-6 mb-8">
+          
+          {/* Age Group */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Wiek dziecka</h3>
+            <div className="flex p-1 bg-gray-100/80 rounded-xl border border-gray-200/50">
+              {AGE_GROUPS.map(age => {
+                 const isActive = options.ageGroup === age;
+                 return (
+                  <button 
+                    key={age} 
+                    onClick={() => handleOptionChange('ageGroup', age)} 
+                    disabled={isLoading}
+                    className={`
+                      flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-200
+                      ${isActive ? 'bg-white text-black shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700'}
+                    `}
+                  >
+                    {age.replace(' lata', '').replace(' lat', '')}
+                  </button>
+                 );
+              })}
             </div>
-          )}
-        </div>
+          </div>
+
+          {/* Line Thickness */}
+          <div className="space-y-2">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Linie</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {LINE_THICKNESSES.map(thickness => {
+                const isActive = options.lineThickness === thickness;
+                return (
+                  <button 
+                    key={thickness} 
+                    onClick={() => handleOptionChange('lineThickness', thickness)} 
+                    disabled={isLoading} 
+                    className={`
+                      py-2.5 px-4 text-sm font-medium rounded-xl border transition-all duration-200
+                      ${isActive 
+                        ? 'border-black bg-black text-white shadow-md' 
+                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'}
+                    `}
+                  >
+                    {thickness}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+       </div>
+
+       {/* Categories Grid */}
+       <div className="mb-8">
+         <div className="flex justify-between items-center mb-3 px-1">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Temat</h3>
+         </div>
+         
+         <div className="grid grid-cols-3 gap-2">
+            {MAIN_CATEGORIES.map(name => renderCategoryCard(name))}
+            
+            {showMore && MORE_CATEGORIES.map(name => renderCategoryCard(name))}
+
+            {/* Show More / Less Button as a Card */}
+            <button 
+               onClick={() => setShowMore(!showMore)}
+               className="flex flex-col items-center justify-center p-2 rounded-xl border border-dashed border-gray-300 text-gray-500 hover:text-black hover:border-gray-400 hover:bg-gray-50 transition-all"
+            >
+               {showMore ? <ChevronUp className="w-5 h-5 mb-1" /> : <ChevronDown className="w-5 h-5 mb-1" />}
+               <span className="text-[10px] font-bold">{showMore ? 'Mniej' : 'Więcej'}</span>
+            </button>
+         </div>
       </div>
-       <div className="mt-8 pt-6 border-t border-gray-200">
-          <HistorySection
-            history={history}
-            onHistoryClick={onHistoryClick}
-          />
-        </div>
-      <style>{`
-        @keyframes fade-in-down { 
-          from { opacity: 0; transform: translateY(-10px); } 
-          to { opacity: 1; transform: translateY(0); } 
-        }
-        .animate-fade-in-down { animation: fade-in-down 0.3s ease-out forwards; }
-      `}</style>
+
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-6" />
+
+      {/* History Section */}
+      <div className="flex-grow">
+        <HistorySection
+          history={history}
+          onHistoryClick={onHistoryClick}
+          onPremiumClick={onPremiumClick}
+          isSelectionMode={isSelectionMode}
+          toggleSelectionMode={toggleSelectionMode}
+          selectedImages={selectedImages}
+          onDownloadBooklet={onDownloadBooklet}
+        />
+      </div>
+
     </div>
   );
 };

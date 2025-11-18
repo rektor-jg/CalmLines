@@ -1,49 +1,22 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
-import { Category, LineThickness, AgeGroup } from '../types';
-import { CATEGORY_STYLES } from '../constants';
+import { Category, LineThickness, AgeGroup, EducationalMode } from '../types';
+import { buildGenerateImagePrompt, buildImageToImagePrompt } from './promptBuilder';
+
+// Helper to initialize AI
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
 export async function generateImage(
     userPrompt: string,
     category: Category,
     lineThickness: LineThickness,
-    ageGroup: AgeGroup
+    ageGroup: AgeGroup,
+    educationalMode: EducationalMode
 ): Promise<string> {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-
-  const sanitizedPrompt = userPrompt.trim().toLowerCase();
+  const ai = getAI();
   
-  let subjectPrompt: string;
-  if (sanitizedPrompt === 'kot') {
-      subjectPrompt = 'prosty, uroczy kot';
-  } else {
-      subjectPrompt = userPrompt.trim();
-  }
-  
-  const categoryStyle = CATEGORY_STYLES[category];
-
-  let sceneDescription: string;
-  switch (ageGroup) {
-    case '2-4 lata':
-        sceneDescription = `pojedynczy, bardzo prosty rysunek obiektu: ${subjectPrompt}. Scena powinna mieć ekstremalnie proste kształty i bardzo duże, łatwe do pokolorowania obszary.`;
-        break;
-    case '5-7 lat':
-        sceneDescription = `urocza, prosta scena przedstawiająca: ${subjectPrompt}. Powinna mieć wyraźne kontury i umiarkowaną ilość detali.`;
-        break;
-    case '8+ lat':
-    default:
-        sceneDescription = `szczegółowa i wciągająca scena z: ${subjectPrompt}. Może zawierać drobniejsze detale i bardziej złożone tło.`;
-        break;
-  }
-
-  const lineStyle = lineThickness === 'Grube' 
-    ? 'Rysunek musi mieć bardzo grube, wyraźne, czarne kontury.' 
-    : 'Rysunek musi mieć cienkie, czyste, czarne kontury.';
-
-  const finalPrompt = `
-    Strona z kolorowanki dla dziecka. ${categoryStyle} Głównym tematem jest ${sceneDescription}. ${lineStyle} Całość musi być izolowana na idealnie białym tle. Bez żadnych cieni, dodatkowych detali w tle, tekstur czy tekstu. Tylko czyste, czarne linie. Styl wektorowy.
-  `.trim().replace(/\s+/g, ' ');
-
+  // Structured prompt from builder
+  const finalPrompt = buildGenerateImagePrompt(userPrompt, category, lineThickness, ageGroup, educationalMode);
 
   try {
     const response = await ai.models.generateContent({
@@ -57,7 +30,6 @@ export async function generateImage(
       },
       config: {
           responseModalities: [Modality.IMAGE],
-          // Removed seed parameter to ensure stability
       },
     });
 
@@ -80,19 +52,12 @@ export async function generateColoringPageFromImage(
     base64Image: string,
     mimeType: string,
     lineThickness: LineThickness,
-    ageGroup: AgeGroup
+    ageGroup: AgeGroup,
+    educationalMode: EducationalMode
 ): Promise<string> {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const ai = getAI();
 
-  const ageModifier = ageGroup === '2-4 lata' 
-    ? 'bardzo prosty z dużymi, łatwymi do pokolorowania obszarami' 
-    : (ageGroup === '5-7 lat' ? 'prosty z wyraźnymi detalami' : 'ze szczegółami i drobniejszymi elementami');
-
-  const lineModifier = lineThickness === 'Grube' ? 'grube, wyraźne czarne kontury' : 'cienkie, czyste czarne kontury';
-
-  const finalPrompt = `
-    Przekształć ten obrazek w stronę z kolorowanki dla dziecka. Styl rysunku: ${ageModifier}. Stwórz ${lineModifier}. Usuń wszystkie kolory, cienie i złożone tekstury. Wynik musi zawierać wyłącznie czarne kontury na idealnie białym tle. Czysty, wektorowy styl.
-  `.trim().replace(/\s+/g, ' ');
+  const finalPrompt = buildImageToImagePrompt(lineThickness, ageGroup, educationalMode);
 
   const imagePart = {
     inlineData: {
@@ -110,7 +75,6 @@ export async function generateColoringPageFromImage(
       contents: { parts: [imagePart, textPart] },
       config: {
           responseModalities: [Modality.IMAGE],
-          // Removed seed parameter to ensure stability
       },
     });
 

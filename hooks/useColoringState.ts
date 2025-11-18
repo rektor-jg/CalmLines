@@ -1,7 +1,10 @@
-import { useState, useCallback, useRef } from 'react';
-import { OptionValues } from '../types';
-import { DAILY_LIMIT, ALL_PROMPTS, CATEGORY_PROMPTS } from '../constants';
+
+import React, { useState, useCallback, useRef } from 'react';
+import { OptionValues, EducationalMode } from '../types';
+import { DAILY_LIMIT, ALL_PROMPTS, CATEGORY_PROMPTS, LANGUAGE_PROMPTS, MATH_PROMPTS } from '../constants';
 import { generateImage, generateColoringPageFromImage } from '../services/geminiService';
+import { fileToBase64 } from '../utils/fileHelpers';
+import { generateBookletPDF } from '../utils/pdfGenerator';
 
 export const useColoringState = () => {
   const [prompt, setPrompt] = useState('');
@@ -9,6 +12,7 @@ export const useColoringState = () => {
     category: 'Wszystko',
     lineThickness: 'Grube',
     ageGroup: '5-7 lat',
+    educationalMode: 'Brak',
   });
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [history, setHistory] = useState<string[]>([]);
@@ -20,7 +24,12 @@ export const useColoringState = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploadMode, setIsUploadMode] = useState(false);
   
+  // Booklet features
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const clearAll = useCallback(() => {
     setPrompt('');
@@ -31,12 +40,19 @@ export const useColoringState = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    setOptions({
+    // Keep the current mode but reset other options
+    setOptions(prev => ({
+      ...prev,
       category: 'Wszystko',
       lineThickness: 'Grube',
       ageGroup: '5-7 lat',
-    });
+    }));
   }, []);
+
+  const setMode = useCallback((mode: EducationalMode) => {
+    clearAll();
+    setOptions(prev => ({ ...prev, educationalMode: mode }));
+  }, [clearAll]);
 
   const handleClearUpload = useCallback(() => {
     setActiveImage(null);
@@ -65,7 +81,8 @@ export const useColoringState = () => {
 
 
     try {
-      const imageUrl = await generateImage(promptToUse, options.category, options.lineThickness, options.ageGroup);
+      const imageUrl = await generateImage(promptToUse, options.category, options.lineThickness, options.ageGroup, options.educationalMode);
+
       setActiveImage(imageUrl);
       setHistory(prev => [imageUrl, ...prev].slice(0, 4));
       setGenerationCount(prev => prev + 1);
@@ -76,20 +93,6 @@ export const useColoringState = () => {
       setIsLoading(false);
     }
   }, [options, generationCount, isPanelOpen]);
-
-   const fileToBase64 = (file: File): Promise<{base64: string, mimeType: string}> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => {
-                const result = reader.result as string;
-                const mimeType = result.split(';')[0].split(':')[1];
-                const base64 = result.split(',')[1];
-                resolve({ base64, mimeType });
-            };
-            reader.onerror = error => reject(error);
-        });
-    };
 
   const handleGenerateFromImage = useCallback(async () => {
     if (!uploadedFile) return;
@@ -105,7 +108,9 @@ export const useColoringState = () => {
 
     try {
         const { base64, mimeType } = await fileToBase64(uploadedFile);
-        const imageUrl = await generateColoringPageFromImage(base64, mimeType, options.lineThickness, options.ageGroup);
+        
+        const imageUrl = await generateColoringPageFromImage(base64, mimeType, options.lineThickness, options.ageGroup, options.educationalMode);
+        
         setActiveImage(imageUrl);
         setHistory(prev => [imageUrl, ...prev].slice(0, 4));
         setGenerationCount(prev => prev + 1);
@@ -122,19 +127,25 @@ export const useColoringState = () => {
   const handleRandomPrompt = useCallback(() => {
     handleClearUpload();
     let promptsToUse: string[];
-    const category = options.category;
-
-    if (category === 'Wszystko') {
-      promptsToUse = ALL_PROMPTS;
+    
+    if (options.educationalMode === 'Języki') {
+      promptsToUse = LANGUAGE_PROMPTS;
+    } else if (options.educationalMode === 'Matematyka') {
+      promptsToUse = MATH_PROMPTS;
     } else {
-      promptsToUse = CATEGORY_PROMPTS[category as Exclude<typeof options.category, 'Wszystko'>] || [];
+      const category = options.category;
+      if (category === 'Wszystko') {
+        promptsToUse = ALL_PROMPTS;
+      } else {
+        promptsToUse = CATEGORY_PROMPTS[category as Exclude<typeof options.category, 'Wszystko'>] || [];
+      }
     }
 
     if (promptsToUse.length > 0) {
         const randomIndex = Math.floor(Math.random() * promptsToUse.length);
         setPrompt(promptsToUse[randomIndex]);
     }
-  }, [options.category, handleClearUpload]);
+  }, [options.category, options.educationalMode, handleClearUpload]);
   
   const handleExampleClick = useCallback((examplePrompt: string) => {
     handleClearUpload();
@@ -143,10 +154,46 @@ export const useColoringState = () => {
   }, [handleGenerateFromText, handleClearUpload]);
 
   const handleHistoryClick = useCallback((imageUrl: string) => {
-    handleClearUpload();
-    setActiveImage(imageUrl);
-    setIsPanelOpen(false);
-  }, [handleClearUpload]);
+    if (isSelectionMode) {
+        toggleImageSelection(imageUrl);
+    } else {
+        handleClearUpload();
+        setActiveImage(imageUrl);
+        setIsPanelOpen(false);
+    }
+  }, [handleClearUpload, isSelectionMode]);
+
+  const toggleImageSelection = (imageUrl: string) => {
+    setSelectedImages(prev => {
+      if (prev.includes(imageUrl)) {
+        return prev.filter(url => url !== imageUrl);
+      } else {
+        return [...prev, imageUrl];
+      }
+    });
+  };
+
+  const toggleSelectionMode = () => {
+    setIsSelectionMode(prev => {
+      if (prev) setSelectedImages([]); // Clear selections when exiting mode
+      return !prev;
+    });
+  };
+
+  const handleDownloadBooklet = async () => {
+    if (selectedImages.length === 0) return;
+    setIsLoading(true);
+    try {
+      await generateBookletPDF(selectedImages, 'Moja Kolorowanka');
+      setSelectedImages([]);
+      setIsSelectionMode(false);
+    } catch (e) {
+      console.error("Error generating booklet", e);
+      setError("Nie udało się wygenerować książeczki.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleUploadClick = () => fileInputRef.current?.click();
 
@@ -168,6 +215,7 @@ export const useColoringState = () => {
   return {
     prompt, setPrompt,
     options, setOptions,
+    setMode,
     activeImage, setActiveImage,
     history, setHistory,
     isLoading, setIsLoading,
@@ -186,6 +234,11 @@ export const useColoringState = () => {
     handleExampleClick,
     handleHistoryClick,
     handleUploadClick,
-    handleFileChange
+    handleFileChange,
+    // Booklet props
+    selectedImages,
+    isSelectionMode,
+    toggleSelectionMode,
+    handleDownloadBooklet
   };
 };
