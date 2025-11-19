@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { OptionValues, Category } from '../types';
 import { CATEGORIES_DATA, MAIN_CATEGORIES, MORE_CATEGORIES, AGE_GROUPS, LINE_THICKNESSES } from '../constants';
 import { HistorySection } from './HistorySection';
+import { MathOperationSelector } from './MathOperationSelector';
 
 interface ColoringOptionsProps {
   options: OptionValues;
@@ -36,7 +37,7 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({
     onOptionsChange(prev => ({ ...prev, [key]: value }));
   };
 
-  // Helper for rendering category cards
+  // Helper for rendering category cards (Used only in non-classic or fallback)
   const renderCategoryCard = (name: Category) => {
     const categoryData = CATEGORIES_DATA.find(c => c.name === name);
     if (!categoryData) return null;
@@ -62,6 +63,8 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({
     );
   };
 
+  const isClassicMode = options.appMode === 'classic';
+
   return (
     <div className="flex flex-col h-full pb-20"> 
        
@@ -85,59 +88,81 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({
                </div>
             )}
 
-            {/* Age Group */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Wiek dziecka</h3>
-              <div className="flex p-1 bg-gray-100/80 rounded-xl border border-gray-200/50">
-                {AGE_GROUPS.map(age => {
-                   const isActive = options.ageGroup === age;
-                   return (
-                    <button 
-                      key={age} 
-                      onClick={() => handleOptionChange('ageGroup', age)} 
-                      disabled={isLoading}
-                      className={`
-                        flex-1 py-2.5 text-xs font-bold rounded-lg transition-all duration-200
-                        ${isActive 
-                          ? 'bg-white text-black shadow-sm ring-1 ring-black/5 scale-[1.02]' 
-                          : 'text-gray-500 hover:text-black hover:bg-white/50'}
-                      `}
-                    >
-                      {age.replace(' lata', '').replace(' lat', '')}
-                    </button>
-                   );
-                })}
-              </div>
-            </div>
+            {options.appMode === 'educational' && options.subject === 'matematyka' && (
+               <MathOperationSelector 
+                 currentOperation={options.mathOperation} 
+                 onOperationChange={(op) => handleOptionChange('mathOperation', op)}
+                 disabled={isLoading}
+               />
+            )}
 
-            {/* Line Thickness */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Linie</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {LINE_THICKNESSES.map(thickness => {
-                  const isActive = options.lineThickness === thickness;
-                  return (
-                    <button 
-                      key={thickness} 
-                      onClick={() => handleOptionChange('lineThickness', thickness)} 
-                      disabled={isLoading} 
-                      className={`
-                        py-3 px-4 text-sm font-bold rounded-xl border transition-all duration-200
-                        ${isActive 
-                          ? 'border-black bg-black text-white shadow-md scale-[1.02]' 
-                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-black'}
-                      `}
-                    >
-                      {thickness}
-                    </button>
-                  );
-                })}
+            {/* Hide Age and Thickness in Classic Mode as they are in CreatorStudio */}
+            {!isClassicMode && (
+              <>
+                {/* Age Group */}
+                <div className="space-y-2">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Wiek dziecka</h3>
+                  <div className="flex p-1 bg-gray-100/80 rounded-xl border border-gray-200/50">
+                    {AGE_GROUPS.map(age => {
+                       const isActive = options.ageGroup === age;
+                       return (
+                        <button 
+                          key={age} 
+                          onClick={() => handleOptionChange('ageGroup', age)} 
+                          disabled={isLoading}
+                          className={`
+                            flex-1 py-2.5 text-xs font-bold rounded-lg transition-all duration-200
+                            ${isActive 
+                              ? 'bg-white text-black shadow-sm ring-1 ring-black/5 scale-[1.02]' 
+                              : 'text-gray-500 hover:text-black hover:bg-white/50'}
+                          `}
+                        >
+                          {age.replace(' lata', '').replace(' lat', '')}
+                        </button>
+                       );
+                    })}
+                  </div>
+                </div>
+
+                {/* Line Thickness */}
+                <div className="space-y-2">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Linie</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {LINE_THICKNESSES.map(thickness => {
+                      const isActive = options.lineThickness === thickness;
+                      return (
+                        <button 
+                          key={thickness} 
+                          onClick={() => handleOptionChange('lineThickness', thickness)} 
+                          disabled={isLoading} 
+                          className={`
+                            py-3 px-4 text-sm font-bold rounded-xl border transition-all duration-200
+                            ${isActive 
+                              ? 'border-black bg-black text-white shadow-md scale-[1.02]' 
+                              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-black'}
+                          `}
+                        >
+                          {thickness}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Classic Mode Promo in Sidebar */}
+            {isClassicMode && (
+              <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200 text-center">
+                 <p className="text-xs font-medium text-gray-500">
+                    Używasz trybu <strong>Creator Studio</strong>. Wszystkie narzędzia do tworzenia znajdziesz teraz na środku ekranu! ✨
+                 </p>
               </div>
-            </div>
+            )}
        </div>
 
-       {/* Categories Grid - Show only if in classic mode */}
-       {options.appMode === 'classic' && (
+       {/* Categories Grid - Show only if NOT in classic mode (since Classic has studio) */}
+       {!isClassicMode && options.appMode === 'classic' && (
          <div className="mb-8">
            <div className="flex justify-between items-center mb-3 px-1">
               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Temat</h3>
@@ -178,4 +203,9 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({
           isSelectionMode={isSelectionMode}
           toggleSelectionMode={toggleSelectionMode}
           selectedImages={selectedImages}
-          
+          onDownloadBooklet={onDownloadBooklet}
+        />
+      </div>
+    </div>
+  );
+};

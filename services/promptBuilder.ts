@@ -17,6 +17,21 @@ const getAgeDescription = (ageGroup: AgeGroup, prompt: string): string => {
   }
 };
 
+const getMathInstruction = (operation?: MathOperation): string => {
+  switch (operation) {
+    case 'add_sub_10':
+      return 'Include simple addition and subtraction problems with numbers up to 10 (e.g., 3+2, 8-1) scattered on the image in large clear font.';
+    case 'add_sub_20':
+      return 'Include addition and subtraction problems with numbers up to 20 (e.g., 12+5, 18-9) scattered on the image in large clear font.';
+    case 'multiplication':
+      return 'Include simple multiplication problems (e.g., 2x3, 4x5) scattered on the image in large clear font.';
+    case 'shapes':
+      return 'Focus on clear geometric shapes (circles, squares, triangles). Label some shapes with their names if possible.';
+    default:
+      return 'Include simple math problems suitable for children.';
+  }
+};
+
 const getSubjectInstruction = (
     subject: Subject, 
     mathOperation?: MathOperation, 
@@ -30,8 +45,7 @@ const getSubjectInstruction = (
        return `Include the Polish word and English translation for the subject below the drawing in outline font (e.g. "KOT / CAT").`;
 
     case 'matematyka':
-      // General math instruction since selector is removed from UI
-      return 'Include simple math problems (addition, subtraction, or simple multiplication like 2+2) on large empty areas suitable for children to solve.';
+      return getMathInstruction(mathOperation);
 
     case 'polski':
       return `Focus on Polish culture, legends, or alphabet. If a letter is mentioned (e.g. 'Literka A'), draw the letter large and clear next to the object.`;
