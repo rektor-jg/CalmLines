@@ -16,6 +16,7 @@ const App: React.FC = () => {
     prompt, setPrompt,
     options, setOptions, setAppMode, setSubject,
     activeImage,
+    storyPages, // From hook
     history,
     isLoading,
     error,
@@ -36,7 +37,8 @@ const App: React.FC = () => {
     isSelectionMode,
     toggleSelectionMode,
     selectedImages,
-    handleDownloadBooklet
+    handleDownloadBooklet,
+    handleDownloadStory // From hook
   } = useColoringState();
 
   const mainContentRef = useRef<HTMLDivElement>(null);
@@ -57,7 +59,7 @@ const App: React.FC = () => {
     setShowTutorial(false);
   };
 
-  const shouldShowInspiration = !isLoading && !error && !activeImage;
+  const shouldShowInspiration = !isLoading && !error && !activeImage && storyPages.length === 0;
 
   return (
     <div className="relative min-h-screen overflow-x-hidden text-black bg-[var(--theme-bg)] transition-colors duration-500">
@@ -143,8 +145,10 @@ const App: React.FC = () => {
               isLoading={isLoading}
               error={error}
               activeImage={activeImage}
+              storyPages={storyPages} // Pass story pages
               isUploadPreview={isUploadMode && !isLoading}
               onClearUpload={handleClearUpload}
+              onDownloadStory={handleDownloadStory} // Pass download handler
             />
           </div>
         </div>

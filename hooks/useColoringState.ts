@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { OptionValues, AppMode, Subject } from '../types';
 import { DAILY_LIMIT, ALL_PROMPTS, CATEGORY_PROMPTS, SUBJECT_PROMPTS } from '../constants';
-import { generateImage, generateColoringPageFromImage } from '../services/geminiService';
+import { generateImage, generateColoringPageFromImage, generateStoryScenes } from '../services/geminiService';
 import { fileToBase64 } from '../utils/fileHelpers';
 import { generateBookletPDF } from '../utils/pdfGenerator';
 
@@ -18,6 +18,7 @@ export const useColoringState = () => {
     customVocabulary: ''
   });
   const [activeImage, setActiveImage] = useState<string | null>(null);
+  const [storyPages, setStoryPages] = useState<string[]>([]); // NEW: For story mode
   const [history, setHistory] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,7 @@ export const useColoringState = () => {
   const clearAll = useCallback(() => {
     setPrompt('');
     setActiveImage(null);
+    setStoryPages([]);
     setError(null);
     setUploadedFile(null);
     setIsUploadMode(false);
@@ -89,23 +91,52 @@ export const useColoringState = () => {
     setIsLoading(true);
     setError(null);
     setActiveImage(null);
+    setStoryPages([]);
     if(isPanelOpen) setIsPanelOpen(false);
 
     try {
-      const imageUrl = await generateImage(
-          promptToUse, 
-          options.category, 
-          options.lineThickness, 
-          options.ageGroup, 
-          options.appMode,
-          options.subject,
-          options.mathOperation,
-          options.customVocabulary
-      );
+      if (options.appMode === 'storybook') {
+         // STORY MODE LOGIC
+         const scenes = await generateStoryScenes(promptToUse, options.ageGroup);
+         
+         // Generate images in parallel (or separate promises to track progress if needed)
+         // Using Promise.all for speed
+         const imagePromises = scenes.map(scene => 
+            generateImage(
+                scene, // The specific scene description becomes the prompt
+                options.category,
+                options.lineThickness,
+                options.ageGroup,
+                'classic', // Use classic prompts for the underlying engine to avoid text constraints
+                options.subject,
+                undefined,
+                undefined
+            )
+         );
 
-      setActiveImage(imageUrl);
-      setHistory(prev => [imageUrl, ...prev].slice(0, 4));
-      setGenerationCount(prev => prev + 1);
+         const generatedImages = await Promise.all(imagePromises);
+         setStoryPages(generatedImages);
+         setHistory(prev => [...generatedImages.reverse(), ...prev].slice(0, 8)); // Store all in history
+         setGenerationCount(prev => prev + 1); // Count as 1 generation for the user? Or 4? Let's be nice and count as 1 interaction
+
+      } else {
+          // CLASSIC & EDUCATIONAL LOGIC
+          const imageUrl = await generateImage(
+              promptToUse, 
+              options.category, 
+              options.lineThickness, 
+              options.ageGroup, 
+              options.appMode,
+              options.subject,
+              options.mathOperation,
+              options.customVocabulary
+          );
+
+          setActiveImage(imageUrl);
+          setHistory(prev => [imageUrl, ...prev].slice(0, 4));
+          setGenerationCount(prev => prev + 1);
+      }
+
     } catch (err) {
       console.error(err);
       setError('Ojej! Coś poszło nie tak podczas rysowania. Sprawdź połączenie lub spróbuj zmienić opis.');
@@ -160,7 +191,7 @@ export const useColoringState = () => {
     if (options.appMode === 'educational') {
         promptsToUse = SUBJECT_PROMPTS[options.subject] || [];
     } else {
-        // Classic
+        // Classic & Storybook (use classic prompts for story inspiration)
         const category = options.category;
         if (category === 'Wszystko') {
           promptsToUse = ALL_PROMPTS;
@@ -190,6 +221,7 @@ export const useColoringState = () => {
     } else {
         handleClearUpload();
         setActiveImage(imageUrl);
+        setStoryPages([]); // Clear story mode if clicking history
         setIsPanelOpen(false);
     }
   }, [handleClearUpload, isSelectionMode]);
@@ -225,6 +257,19 @@ export const useColoringState = () => {
       setIsLoading(false);
     }
   };
+  
+  const handleDownloadStory = async () => {
+      if (storyPages.length === 0) return;
+      setIsLoading(true);
+      try {
+        await generateBookletPDF(storyPages, prompt || 'Moja Historyjka');
+      } catch (e) {
+        console.error("Error generating story pdf", e);
+        setError("Nie udało się pobrać książeczki.");
+      } finally {
+        setIsLoading(false);
+      }
+  };
 
   const handleUploadClick = () => fileInputRef.current?.click();
 
@@ -238,6 +283,7 @@ export const useColoringState = () => {
               setIsUploadMode(true);
               setError(null);
               setPrompt('');
+              setStoryPages([]);
           };
           reader.readAsDataURL(file);
       }
@@ -248,6 +294,7 @@ export const useColoringState = () => {
     options, setOptions,
     setAppMode, setSubject,
     activeImage, setActiveImage,
+    storyPages, // Export story pages
     history, setHistory,
     isLoading, setIsLoading,
     error, setError,
@@ -269,6 +316,7 @@ export const useColoringState = () => {
     selectedImages,
     isSelectionMode,
     toggleSelectionMode,
-    handleDownloadBooklet
+    handleDownloadBooklet,
+    handleDownloadStory
   };
 };

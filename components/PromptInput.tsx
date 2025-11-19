@@ -34,8 +34,26 @@ export const PromptInput: React.FC<PromptInputProps> = ({
     }
   };
 
+  const getPlaceholder = () => {
+      if (appMode === 'storybook') {
+          return "O czym ma być ta historia? Np. Przygody wesołego robota...";
+      }
+      if (appMode === 'educational') {
+          return `Opisz zadanie z przedmiotu ${SUBJECTS_CONFIG.find(s=>s.id===subject)?.label}...`;
+      }
+      return "Opisz, co chcesz narysować...";
+  };
+
   const getModeHint = () => {
     if (appMode === 'classic') return null;
+
+    if (appMode === 'storybook') {
+        return {
+            text: "Tryb Historyjka: Stworzę 4 powiązane obrazki.",
+            color: '#d97706', // amber-600
+            bg: '#fffbeb' // amber-50
+        };
+    }
 
     const config = SUBJECTS_CONFIG.find(s => s.id === subject);
     if (!config) return null;
@@ -68,7 +86,7 @@ export const PromptInput: React.FC<PromptInputProps> = ({
           value={prompt}
           onChange={(e) => onPromptChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={appMode === 'educational' ? `Opisz zadanie z przedmiotu ${SUBJECTS_CONFIG.find(s=>s.id===subject)?.label}...` : "Opisz, co chcesz narysować..."}
+          placeholder={getPlaceholder()}
           className="w-full py-5 pl-16 pr-36 text-lg bg-white/90 text-black placeholder-gray-400 border-2 border-gray-200 rounded-3xl focus:ring-0 focus:border-black focus:bg-white transition-all duration-300 resize-none shadow-lg shadow-gray-100 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-400"
           rows={1}
           disabled={isLoading || disabled}

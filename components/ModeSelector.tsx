@@ -2,7 +2,7 @@
 import React from 'react';
 import { SUBJECTS_CONFIG } from '../constants';
 import { AppMode, Subject } from '../types';
-import { Palette, GraduationCap } from 'lucide-react';
+import { Palette, GraduationCap, BookOpen } from 'lucide-react';
 
 interface ModeSelectorProps {
   currentAppMode: AppMode;
@@ -20,12 +20,12 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
   return (
     <div className="w-full flex flex-col items-center mb-6 space-y-5 animate-fade-in">
       
-      {/* Top Tabs: Classic vs Educational */}
-      <div className="bg-white/80 backdrop-blur-lg p-1.5 rounded-full shadow-sm border border-gray-200/60 flex space-x-1">
+      {/* Top Tabs: Classic vs Educational vs Storybook */}
+      <div className="bg-white/80 backdrop-blur-lg p-1.5 rounded-full shadow-sm border border-gray-200/60 flex flex-wrap justify-center sm:space-x-1 gap-1 sm:gap-0">
         <button
           onClick={() => onAppModeChange('classic')}
           className={`
-            flex items-center space-x-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300
+            flex items-center space-x-2 px-4 sm:px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-1 sm:flex-none justify-center
             ${currentAppMode === 'classic' 
               ? 'bg-black text-white shadow-md' 
               : 'text-gray-500 hover:text-black hover:bg-gray-100'}
@@ -38,7 +38,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
         <button
           onClick={() => onAppModeChange('educational')}
           className={`
-            flex items-center space-x-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300
+            flex items-center space-x-2 px-4 sm:px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-1 sm:flex-none justify-center
             ${currentAppMode === 'educational' 
               ? 'bg-blue-600 text-white shadow-md' 
               : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'}
@@ -46,6 +46,19 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
         >
           <GraduationCap className="w-4 h-4" />
           <span>Edukacyjny</span>
+        </button>
+
+        <button
+          onClick={() => onAppModeChange('storybook')}
+          className={`
+            flex items-center space-x-2 px-4 sm:px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-1 sm:flex-none justify-center
+            ${currentAppMode === 'storybook' 
+              ? 'bg-amber-600 text-white shadow-md' 
+              : 'text-gray-500 hover:text-amber-600 hover:bg-amber-50'}
+          `}
+        >
+          <BookOpen className="w-4 h-4" />
+          <span>Historyjka</span>
         </button>
       </div>
 
@@ -84,6 +97,15 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
                );
              })}
            </div>
+        </div>
+      )}
+
+      {/* Hint for Storybook */}
+      {currentAppMode === 'storybook' && (
+        <div className="text-center animate-fade-in px-4">
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl py-2 px-4 inline-block font-medium">
+                Wpisz temat, a stworzę 4-częściową historyjkę do pokolorowania!
+            </p>
         </div>
       )}
     </div>

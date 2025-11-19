@@ -5,7 +5,7 @@ export type Category = 'Wszystko' | 'Zwierzęta' | 'Pojazdy' | 'Fantazja' | 'Nat
 export type LineThickness = 'Grube' | 'Cienkie';
 export type AgeGroup = '2-4 lata' | '5-7 lat' | '8+ lat';
 
-export type AppMode = 'classic' | 'educational';
+export type AppMode = 'classic' | 'educational' | 'storybook';
 
 export type Subject = 
   | 'polski' 
