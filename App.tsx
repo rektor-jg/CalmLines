@@ -1,21 +1,17 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { X, SlidersHorizontal, UploadCloud, Home } from 'lucide-react';
+import { X, SlidersHorizontal, UploadCloud } from 'lucide-react';
 import { useColoringState } from './hooks/useColoringState';
 import { useTheme } from './hooks/useTheme';
 import { PromptInput } from './components/PromptInput';
-import { CreatorStudio } from './components/CreatorStudio';
 import { ColoringOptions } from './components/ColoringOptions';
 import { ResultDisplay } from './components/ResultDisplay';
 import { InspirationSection } from './components/InspirationSection';
 import { LimitModal } from './components/LimitModal';
 import { ModeSelector } from './components/ModeSelector';
 import { OnboardingTutorial } from './components/OnboardingTutorial';
-import { LandingPage } from './components/LandingPage';
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'landing' | 'app'>('landing');
-
   const {
     prompt, setPrompt,
     options, setOptions, setAppMode, setSubject,
@@ -51,10 +47,10 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('hasSeenTutorial_v1');
-    if (!hasSeenTutorial && currentView === 'app') {
+    if (!hasSeenTutorial) {
       setShowTutorial(true);
     }
-  }, [currentView]);
+  }, []);
 
   const handleTutorialComplete = () => {
     localStorage.setItem('hasSeenTutorial_v1', 'true');
@@ -62,15 +58,6 @@ const App: React.FC = () => {
   };
 
   const shouldShowInspiration = !isLoading && !error && !activeImage;
-  
-  // Handle option changes from Creator Studio
-  const handleCategoryChange = (cat: any) => setOptions(prev => ({...prev, category: cat}));
-  const handleAgeChange = (age: any) => setOptions(prev => ({...prev, ageGroup: age}));
-  const handleThicknessChange = (thick: any) => setOptions(prev => ({...prev, lineThickness: thick}));
-
-  if (currentView === 'landing') {
-    return <LandingPage onEnterApp={() => setCurrentView('app')} />;
-  }
 
   return (
     <div className="relative min-h-screen overflow-x-hidden text-black bg-[var(--theme-bg)] transition-colors duration-500">
@@ -115,7 +102,7 @@ const App: React.FC = () => {
             </div>
         </aside>
 
-      {/* Floating Buttons (Settings, Upload, Home) */}
+      {/* Floating Buttons (Settings & Upload) */}
       <div className={`fixed top-6 z-30 flex items-center space-x-3 transition-all duration-300 ease-in-out ${isPanelOpen ? 'left-6 lg:left-[22rem]' : 'left-6'}`}>
           {!isPanelOpen && (
             <button 
@@ -132,15 +119,6 @@ const App: React.FC = () => {
             className="p-3.5 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-gray-700 hover:text-black hover:bg-white transition-all duration-300 hover:scale-110 active:scale-95 border border-white/50"
           >
               <UploadCloud size={24} />
-          </button>
-          
-          {/* Button to go back to Landing Page */}
-          <button 
-            onClick={() => setCurrentView('landing')} 
-            title="Strona główna / Info" 
-            className="p-3.5 bg-black/5 backdrop-blur-md rounded-full shadow-lg text-black hover:bg-black hover:text-white transition-all duration-300 hover:scale-110 active:scale-95 border border-white/50"
-          >
-              <Home size={24} />
           </button>
       </div>
 
@@ -159,7 +137,6 @@ const App: React.FC = () => {
            />
         </div>
 
-        {/* Result Display Area */}
         <div className="w-full max-w-2xl flex-grow flex items-center justify-center min-h-[40vh]">
           <div className="w-full">
             <ResultDisplay
@@ -172,35 +149,18 @@ const App: React.FC = () => {
           </div>
         </div>
         
-        {/* Input Section - Swaps based on Mode */}
         <div className="w-full max-w-3xl mt-8 flex-shrink-0 mb-8 relative z-20">
-          {options.appMode === 'classic' && !isUploadMode ? (
-            <CreatorStudio 
-              prompt={prompt}
-              onPromptChange={setPrompt}
-              category={options.category}
-              onCategoryChange={handleCategoryChange}
-              ageGroup={options.ageGroup}
-              onAgeGroupChange={handleAgeChange}
-              lineThickness={options.lineThickness}
-              onLineThicknessChange={handleThicknessChange}
-              onGenerate={() => handleGenerateFromText(prompt)}
-              onRandomize={handleRandomPrompt}
-              isLoading={isLoading}
-            />
-          ) : (
-            <PromptInput
-              prompt={prompt}
-              onPromptChange={setPrompt}
-              onGenerate={isUploadMode ? handleGenerateFromImage : () => handleGenerateFromText(prompt)}
-              onRandomize={handleRandomPrompt}
-              onClear={clearAll}
-              isLoading={isLoading}
-              disabled={isUploadMode}
-              appMode={options.appMode}
-              subject={options.subject}
-            />
-          )}
+          <PromptInput
+            prompt={prompt}
+            onPromptChange={setPrompt}
+            onGenerate={isUploadMode ? handleGenerateFromImage : () => handleGenerateFromText(prompt)}
+            onRandomize={handleRandomPrompt}
+            onClear={clearAll}
+            isLoading={isLoading}
+            disabled={isUploadMode}
+            appMode={options.appMode}
+            subject={options.subject}
+          />
         </div>
         
          {shouldShowInspiration && (
