@@ -36,10 +36,10 @@ export const HistorySection: React.FC<HistorySectionProps> = ({
           <button 
             onClick={toggleSelectionMode}
             className={`
-              flex items-center space-x-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition-all duration-200
+              flex items-center space-x-1.5 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all duration-200
               ${isSelectionMode 
                 ? 'bg-black text-white shadow-md' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-black'}
             `}
           >
             {isSelectionMode ? <CheckSquare className="w-3 h-3" /> : <MousePointer2 className="w-3 h-3" />}
@@ -63,7 +63,7 @@ export const HistorySection: React.FC<HistorySectionProps> = ({
                 onClick={() => onHistoryClick(imageUrl)} 
                 className={`
                   group relative aspect-square rounded-2xl overflow-hidden transition-all duration-300
-                  ${isSelectionMode ? 'cursor-pointer' : 'cursor-pointer hover:scale-[1.02] hover:shadow-lg'}
+                  ${isSelectionMode ? 'cursor-pointer' : 'cursor-pointer hover:scale-[1.03] hover:shadow-lg'}
                   ${isSelected ? 'ring-2 ring-black ring-offset-2' : 'border border-gray-100'}
                 `}
               >
@@ -101,7 +101,7 @@ export const HistorySection: React.FC<HistorySectionProps> = ({
               <button 
                 key={`premium-${index}`} 
                 onClick={onPremiumClick}
-                className="aspect-square rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50/50 to-amber-100/50 flex flex-col items-center justify-center group transition-all hover:border-amber-200 hover:shadow-sm"
+                className="aspect-square rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50/50 to-amber-100/50 flex flex-col items-center justify-center group transition-all hover:border-amber-200 hover:shadow-sm hover:scale-[1.02]"
               >
                 <div className="w-8 h-8 rounded-full bg-white/80 shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
                   <Lock className="w-4 h-4 text-amber-500" />
@@ -128,7 +128,7 @@ export const HistorySection: React.FC<HistorySectionProps> = ({
             onClick={onDownloadBooklet}
             disabled={selectedImages.length === 0}
             className={`
-              w-full py-3 px-4 rounded-xl flex items-center justify-center space-x-2 text-sm font-bold shadow-lg transition-all
+              w-full py-3.5 px-4 rounded-xl flex items-center justify-center space-x-2 text-sm font-bold shadow-lg transition-all duration-200
               ${selectedImages.length > 0 
                 ? 'bg-black text-white hover:bg-gray-800 hover:scale-[1.02]' 
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'}

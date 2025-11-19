@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useRef } from 'react';
-import { OptionValues, EducationalMode } from '../types';
-import { DAILY_LIMIT, ALL_PROMPTS, CATEGORY_PROMPTS, LANGUAGE_PROMPTS, MATH_PROMPTS } from '../constants';
+import { OptionValues, AppMode, Subject } from '../types';
+import { DAILY_LIMIT, ALL_PROMPTS, CATEGORY_PROMPTS, SUBJECT_PROMPTS } from '../constants';
 import { generateImage, generateColoringPageFromImage } from '../services/geminiService';
 import { fileToBase64 } from '../utils/fileHelpers';
 import { generateBookletPDF } from '../utils/pdfGenerator';
@@ -12,7 +12,10 @@ export const useColoringState = () => {
     category: 'Wszystko',
     lineThickness: 'Grube',
     ageGroup: '5-7 lat',
-    educationalMode: 'Brak',
+    appMode: 'classic',
+    subject: 'angielski', // Default subject
+    mathOperation: 'add_sub_10',
+    customVocabulary: ''
   });
   const [activeImage, setActiveImage] = useState<string | null>(null);
   const [history, setHistory] = useState<string[]>([]);
@@ -40,18 +43,24 @@ export const useColoringState = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-    // Keep the current mode but reset other options
+    // Reset minor options but keep mode
     setOptions(prev => ({
       ...prev,
       category: 'Wszystko',
       lineThickness: 'Grube',
       ageGroup: '5-7 lat',
+      customVocabulary: ''
     }));
   }, []);
 
-  const setMode = useCallback((mode: EducationalMode) => {
+  const setAppMode = useCallback((mode: AppMode) => {
     clearAll();
-    setOptions(prev => ({ ...prev, educationalMode: mode }));
+    setOptions(prev => ({ ...prev, appMode: mode }));
+  }, [clearAll]);
+  
+  const setSubject = useCallback((subj: Subject) => {
+    clearAll();
+    setOptions(prev => ({ ...prev, subject: subj }));
   }, [clearAll]);
 
   const handleClearUpload = useCallback(() => {
@@ -68,8 +77,11 @@ export const useColoringState = () => {
       setIsLimitModalOpen(true);
       return;
     }
-      
-    if (!promptToUse.trim()) {
+    
+    // If in Language mode and custom vocab is set, we allow empty prompt (because vocab IS the prompt)
+    const isLanguageOverride = options.appMode === 'educational' && options.subject === 'angielski' && options.customVocabulary?.trim();
+
+    if (!promptToUse.trim() && !isLanguageOverride) {
       setError('Puste pole czeka na Twój pomysł! Wpisz, co mam narysować. ✨');
       return;
     }
@@ -79,9 +91,17 @@ export const useColoringState = () => {
     setActiveImage(null);
     if(isPanelOpen) setIsPanelOpen(false);
 
-
     try {
-      const imageUrl = await generateImage(promptToUse, options.category, options.lineThickness, options.ageGroup, options.educationalMode);
+      const imageUrl = await generateImage(
+          promptToUse, 
+          options.category, 
+          options.lineThickness, 
+          options.ageGroup, 
+          options.appMode,
+          options.subject,
+          options.mathOperation,
+          options.customVocabulary
+      );
 
       setActiveImage(imageUrl);
       setHistory(prev => [imageUrl, ...prev].slice(0, 4));
@@ -109,7 +129,16 @@ export const useColoringState = () => {
     try {
         const { base64, mimeType } = await fileToBase64(uploadedFile);
         
-        const imageUrl = await generateColoringPageFromImage(base64, mimeType, options.lineThickness, options.ageGroup, options.educationalMode);
+        const imageUrl = await generateColoringPageFromImage(
+            base64, 
+            mimeType, 
+            options.lineThickness, 
+            options.ageGroup, 
+            options.appMode,
+            options.subject,
+            options.mathOperation,
+            options.customVocabulary
+        );
         
         setActiveImage(imageUrl);
         setHistory(prev => [imageUrl, ...prev].slice(0, 4));
@@ -126,26 +155,28 @@ export const useColoringState = () => {
 
   const handleRandomPrompt = useCallback(() => {
     handleClearUpload();
-    let promptsToUse: string[];
+    let promptsToUse: string[] = [];
     
-    if (options.educationalMode === 'Języki') {
-      promptsToUse = LANGUAGE_PROMPTS;
-    } else if (options.educationalMode === 'Matematyka') {
-      promptsToUse = MATH_PROMPTS;
+    if (options.appMode === 'educational') {
+        promptsToUse = SUBJECT_PROMPTS[options.subject] || [];
     } else {
-      const category = options.category;
-      if (category === 'Wszystko') {
-        promptsToUse = ALL_PROMPTS;
-      } else {
-        promptsToUse = CATEGORY_PROMPTS[category as Exclude<typeof options.category, 'Wszystko'>] || [];
-      }
+        // Classic
+        const category = options.category;
+        if (category === 'Wszystko') {
+          promptsToUse = ALL_PROMPTS;
+        } else {
+          promptsToUse = CATEGORY_PROMPTS[category as Exclude<typeof options.category, 'Wszystko'>] || [];
+        }
     }
 
     if (promptsToUse.length > 0) {
         const randomIndex = Math.floor(Math.random() * promptsToUse.length);
-        setPrompt(promptsToUse[randomIndex]);
+        const randomP = promptsToUse[randomIndex];
+        setPrompt(randomP);
+        // Clear vocab if randomizing to avoid confusion
+        setOptions(prev => ({...prev, customVocabulary: ''}));
     }
-  }, [options.category, options.educationalMode, handleClearUpload]);
+  }, [options.category, options.appMode, options.subject, handleClearUpload]);
   
   const handleExampleClick = useCallback((examplePrompt: string) => {
     handleClearUpload();
@@ -175,7 +206,7 @@ export const useColoringState = () => {
 
   const toggleSelectionMode = () => {
     setIsSelectionMode(prev => {
-      if (prev) setSelectedImages([]); // Clear selections when exiting mode
+      if (prev) setSelectedImages([]); 
       return !prev;
     });
   };
@@ -215,7 +246,7 @@ export const useColoringState = () => {
   return {
     prompt, setPrompt,
     options, setOptions,
-    setMode,
+    setAppMode, setSubject,
     activeImage, setActiveImage,
     history, setHistory,
     isLoading, setIsLoading,
@@ -235,7 +266,6 @@ export const useColoringState = () => {
     handleHistoryClick,
     handleUploadClick,
     handleFileChange,
-    // Booklet props
     selectedImages,
     isSelectionMode,
     toggleSelectionMode,

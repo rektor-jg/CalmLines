@@ -1,5 +1,5 @@
 
-import { Category, LineThickness, AgeGroup, EducationalMode } from '../types';
+import { Category, LineThickness, AgeGroup, AppMode, Subject, MathOperation } from '../types';
 import { CATEGORY_STYLES } from '../constants';
 
 const getLineDescription = (thickness: LineThickness): string => 
@@ -17,14 +17,40 @@ const getAgeDescription = (ageGroup: AgeGroup, prompt: string): string => {
   }
 };
 
-const getEducationModifier = (educationalMode: EducationalMode): string => {
-  if (educationalMode === 'Języki') {
-    return `Include the Polish word and English translation for the subject below the drawing in outline font (e.g. "KOT / CAT").`;
-  } else if (educationalMode === 'Matematyka') {
-    return `Include simple math problems (e.g. 2+2) on large empty areas of the drawing.`;
+const getSubjectInstruction = (
+    subject: Subject, 
+    mathOperation?: MathOperation, 
+    customVocabulary?: string
+): string => {
+  switch (subject) {
+    case 'angielski':
+       if (customVocabulary && customVocabulary.trim().length > 0) {
+         return `IMPORTANT: The main subject of the image MUST BE '${customVocabulary}'. Include the text label '${customVocabulary}' and its Polish/English translation below the drawing in outline font.`;
+       }
+       return `Include the Polish word and English translation for the subject below the drawing in outline font (e.g. "KOT / CAT").`;
+
+    case 'matematyka':
+      // General math instruction since selector is removed from UI
+      return 'Include simple math problems (addition, subtraction, or simple multiplication like 2+2) on large empty areas suitable for children to solve.';
+
+    case 'polski':
+      return `Focus on Polish culture, legends, or alphabet. If a letter is mentioned (e.g. 'Literka A'), draw the letter large and clear next to the object.`;
+
+    case 'przyroda':
+      return `Focus on nature, biology, or geography accuracy suitable for a child. Depict plants, animals, or natural phenomena clearly.`;
+
+    case 'muzyka':
+      return `Focus on musical instruments, notes, or musical notation. Draw instruments accurately but simplified for coloring. Include music notes in the background.`;
+
+    case 'plastyka':
+      return `Focus on art, creativity, and patterns. Use outlines that encourage creative coloring (e.g. mandalas, paint brushes, mosaics).`;
+
+    case 'fizyka':
+      return `Focus on physical phenomena (gravity, magnetism, space, machines) in a fun, simplified way suitable for kids.`;
+
+    default:
+      return '';
   }
-  // Default for Classic mode: Explicitly forbid text unless it's part of the scene description
-  return 'Do not add any text, words, captions, or labels to the image unless explicitly requested in the subject description.';
 };
 
 export const buildGenerateImagePrompt = (
@@ -32,13 +58,26 @@ export const buildGenerateImagePrompt = (
     category: Category,
     lineThickness: LineThickness,
     ageGroup: AgeGroup,
-    educationalMode: EducationalMode
+    appMode: AppMode,
+    subject: Subject,
+    mathOperation?: MathOperation,
+    customVocabulary?: string
 ): string => {
-  const sanitizedPrompt = userPrompt.trim();
+  // If Custom Vocabulary is present in English mode, it overrides userPrompt
+  let effectivePrompt = userPrompt.trim();
+  if (appMode === 'educational' && subject === 'angielski' && customVocabulary && customVocabulary.trim()) {
+      effectivePrompt = customVocabulary.trim(); 
+  }
+
   const categoryStyle = CATEGORY_STYLES[category];
-  const sceneDescription = getAgeDescription(ageGroup, sanitizedPrompt);
+  const sceneDescription = getAgeDescription(ageGroup, effectivePrompt);
   const lineStyle = getLineDescription(lineThickness);
-  const educationModifier = getEducationModifier(educationalMode);
+  
+  let educationModifier = 'Do not add any text, words, captions, or labels to the image unless explicitly requested in the subject description.';
+  
+  if (appMode === 'educational') {
+    educationModifier = getSubjectInstruction(subject, mathOperation, customVocabulary);
+  }
 
   return `
     Task: Generate a coloring book page for children.
@@ -53,7 +92,10 @@ export const buildGenerateImagePrompt = (
 export const buildImageToImagePrompt = (
     lineThickness: LineThickness,
     ageGroup: AgeGroup,
-    educationalMode: EducationalMode
+    appMode: AppMode,
+    subject: Subject,
+    mathOperation?: MathOperation,
+    customVocabulary?: string
 ): string => {
   const ageModifier = ageGroup === '2-4 lata' 
     ? 'Simple shapes, low detail' 
@@ -61,13 +103,9 @@ export const buildImageToImagePrompt = (
 
   const lineModifier = lineThickness === 'Grube' ? 'Thick bold lines' : 'Thin precise lines';
   
-  let educationModifier = '';
-  if (educationalMode === 'Języki') {
-    educationModifier = `Include text labels in Polish and English.`;
-  } else if (educationalMode === 'Matematyka') {
-    educationModifier = `Include simple math problems on empty areas.`;
-  } else {
-    educationModifier = `Do not include any text, words, or labels.`;
+  let educationModifier = 'Do not add any text.';
+  if (appMode === 'educational') {
+     educationModifier = getSubjectInstruction(subject, mathOperation, customVocabulary);
   }
 
   return `

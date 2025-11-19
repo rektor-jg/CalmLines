@@ -14,7 +14,7 @@ import { OnboardingTutorial } from './components/OnboardingTutorial';
 const App: React.FC = () => {
   const {
     prompt, setPrompt,
-    options, setOptions, setMode,
+    options, setOptions, setAppMode, setSubject,
     activeImage,
     history,
     isLoading,
@@ -42,8 +42,8 @@ const App: React.FC = () => {
   const mainContentRef = useRef<HTMLDivElement>(null);
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Apply theme variables based on mode
-  useTheme(options.educationalMode);
+  // Apply theme variables
+  useTheme(options.appMode === 'educational' ? options.subject : null);
 
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('hasSeenTutorial_v1');
@@ -79,8 +79,12 @@ const App: React.FC = () => {
             <div className="h-full p-6 overflow-y-auto">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-black">Opcje</h2>
-                    <button onClick={() => setIsPanelOpen(false)} title="Zamknij" className="p-2 text-gray-500 hover:text-black rounded-full hover:bg-gray-100 transition-colors">
-                        <X />
+                    <button 
+                      onClick={() => setIsPanelOpen(false)} 
+                      title="Zamknij" 
+                      className="p-2.5 text-gray-500 hover:text-black rounded-full hover:bg-gray-100 transition-all duration-200 active:scale-95"
+                    >
+                        <X size={24} />
                     </button>
                 </div>
                 <ColoringOptions
@@ -99,14 +103,22 @@ const App: React.FC = () => {
         </aside>
 
       {/* Floating Buttons (Settings & Upload) */}
-      <div className={`fixed top-6 z-30 flex items-center space-x-2 transition-all duration-300 ease-in-out ${isPanelOpen ? 'left-6 lg:left-[22rem]' : 'left-6'}`}>
+      <div className={`fixed top-6 z-30 flex items-center space-x-3 transition-all duration-300 ease-in-out ${isPanelOpen ? 'left-6 lg:left-[22rem]' : 'left-6'}`}>
           {!isPanelOpen && (
-            <button onClick={() => setIsPanelOpen(true)} title="Opcje i historia" className="p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-gray-700 hover:text-black hover:bg-white transition-all hover:scale-105">
-                <SlidersHorizontal />
+            <button 
+              onClick={() => setIsPanelOpen(true)} 
+              title="Opcje i historia" 
+              className="p-3.5 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-gray-700 hover:text-black hover:bg-white transition-all duration-300 hover:scale-110 active:scale-95 border border-white/50"
+            >
+                <SlidersHorizontal size={24} />
             </button>
           )}
-          <button onClick={handleUploadClick} title="Stwórz kolorowankę ze zdjęcia" className="p-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-gray-700 hover:text-black hover:bg-white transition-all hover:scale-105">
-              <UploadCloud />
+          <button 
+            onClick={handleUploadClick} 
+            title="Stwórz kolorowankę ze zdjęcia" 
+            className="p-3.5 bg-white/80 backdrop-blur-md rounded-full shadow-lg text-gray-700 hover:text-black hover:bg-white transition-all duration-300 hover:scale-110 active:scale-95 border border-white/50"
+          >
+              <UploadCloud size={24} />
           </button>
       </div>
 
@@ -116,8 +128,13 @@ const App: React.FC = () => {
         className={`w-full min-h-screen flex flex-col items-center p-4 sm:p-6 lg:p-8 transition-all duration-300 ease-in-out ${isPanelOpen ? 'lg:pl-80' : 'lg:pl-0'}`}
       >
 
-        <div className="w-full max-w-4xl mt-16 mb-4 sm:mt-4">
-           <ModeSelector currentMode={options.educationalMode} onModeChange={setMode} />
+        <div className="w-full max-w-4xl mt-16 sm:mt-4 flex flex-col items-center">
+           <ModeSelector 
+             currentAppMode={options.appMode} 
+             onAppModeChange={setAppMode}
+             currentSubject={options.subject}
+             onSubjectChange={setSubject}
+           />
         </div>
 
         <div className="w-full max-w-2xl flex-grow flex items-center justify-center min-h-[40vh]">
@@ -141,6 +158,8 @@ const App: React.FC = () => {
             onClear={clearAll}
             isLoading={isLoading}
             disabled={isUploadMode}
+            appMode={options.appMode}
+            subject={options.subject}
           />
         </div>
         
@@ -149,7 +168,8 @@ const App: React.FC = () => {
                 <InspirationSection 
                   onExampleClick={handleExampleClick} 
                   isLoading={isLoading} 
-                  mode={options.educationalMode}
+                  appMode={options.appMode}
+                  subject={options.subject}
                 />
               </div>
          )}

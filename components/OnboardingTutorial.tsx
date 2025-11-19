@@ -64,7 +64,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onComple
             <h3 className="text-lg font-bold text-black">{currentStep.title}</h3>
             <button 
               onClick={onComplete}
-              className="text-gray-400 hover:text-black text-xs font-semibold px-2 py-1 rounded-md hover:bg-gray-100 transition-colors"
+              className="text-gray-400 hover:text-black text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
             >
               Pomiń
             </button>
@@ -87,7 +87,7 @@ export const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onComple
 
             <button 
               onClick={handleNext}
-              className="flex items-center space-x-2 bg-black text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 transition-transform hover:scale-105 shadow-md"
+              className="flex items-center space-x-2 bg-black text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-gray-800 transition-all duration-200 hover:scale-[1.02] shadow-md"
             >
               <span>{step === steps.length - 1 ? 'Zaczynamy' : 'Dalej'}</span>
               {step === steps.length - 1 ? <Check className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}

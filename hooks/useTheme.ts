@@ -1,19 +1,24 @@
 
 import { useEffect } from 'react';
-import { EducationalMode } from '../types';
+import { Subject } from '../types';
+import { SUBJECTS_CONFIG } from '../constants';
 
-export const useTheme = (mode: EducationalMode) => {
+export const useTheme = (subject?: Subject | null) => {
   useEffect(() => {
     const root = document.documentElement;
-    if (mode === 'Języki') {
-      root.style.setProperty('--theme-color', '#4f46e5'); // Indigo
-      root.style.setProperty('--theme-bg', '#eef2ff');
-    } else if (mode === 'Matematyka') {
-      root.style.setProperty('--theme-color', '#059669'); // Emerald
-      root.style.setProperty('--theme-bg', '#ecfdf5');
-    } else {
-      root.style.setProperty('--theme-color', '#000000'); // Black
-      root.style.setProperty('--theme-bg', '#ffffff');
+    
+    if (subject) {
+      const config = SUBJECTS_CONFIG.find(s => s.id === subject);
+      if (config) {
+        root.style.setProperty('--theme-color', config.themeColor);
+        root.style.setProperty('--theme-bg', config.bgColor);
+        return;
+      }
     }
-  }, [mode]);
+
+    // Default Classic Theme
+    root.style.setProperty('--theme-color', '#000000'); 
+    root.style.setProperty('--theme-bg', '#ffffff');
+    
+  }, [subject]);
 };

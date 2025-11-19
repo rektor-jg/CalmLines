@@ -1,15 +1,19 @@
+
 import React from 'react';
 import { 
   PawPrint, Truck, Sparkles, Sprout, CakeSlice, 
   Bot, Castle, Rocket, Fish, LayoutGrid,
   Bike, Orbit, HardHat,
-  BookA, Calculator, Palette, Apple, Dog, Hash
+  BookA, Calculator, Palette, Apple, Dog, Hash,
+  Plus, X as MultiplyIcon, Shapes,
+  Music, Feather, Atom, Globe, Leaf, Languages
 } from 'lucide-react';
-import { Category, AgeGroup, LineThickness, EducationalMode, ModeConfig } from '../types';
+import { Category, AgeGroup, LineThickness, Subject, SubjectConfig, MathOperation } from '../types';
 
 export const DAILY_LIMIT = 4;
 export const SUBSCRIPTION_URL = 'https://example.com/subscribe';
 
+// --- CLASSIC PROMPTS ---
 export const CATEGORY_PROMPTS: Record<Exclude<Category, 'Wszystko'>, string[]> = {
   'Zwierzęta': ['sowa w okularach czytająca książkę', 'leniwiec w hamaku', 'tańczący hipopotam w spódniczce baletowej', 'lis detektyw z lupą', 'żyrafa w szaliku'],
   'Pojazdy': ['latający autobus szkolny', 'monster truck zrobiony z warzyw', 'wyścigówka prowadzona przez ślimaka', 'statek piracki na kółkach', 'motocykl z koszem dla psa'],
@@ -21,58 +25,99 @@ export const CATEGORY_PROMPTS: Record<Exclude<Category, 'Wszystko'>, string[]> =
   'Zawody': ['kucharz żonglujący warzywami', 'naukowiec z szalonymi włosami i miksturami', 'budowniczy konstruujący wieżę z klocków LEGO', 'strażak ratujący kota z drzewa', 'ogrodnik rozmawiający z kwiatami'],
 };
 
-export const LANGUAGE_PROMPTS: string[] = [
-  'Kot', 'Pies', 'Dom', 'Jabłko', 'Samochód', 'Drzewo', 'Słońce', 'Księżyc', 'Ryba', 'Ptak', 'Kwiat', 'Piłka', 'Lody', 'Zegar', 'Klucz'
-];
-
-export const MATH_PROMPTS: string[] = [
-  '3 jabłka', '5 balonów', '2 koty', '4 samochody', '1 słońce', '6 motyli', '3 kaczki', '2 domki', '5 gwiazdek', '4 cukierki'
-];
-
 export const ALL_PROMPTS = Object.values(CATEGORY_PROMPTS).flat();
 
-export const MODES_CONFIG: ModeConfig[] = [
-  { 
-    id: 'Brak', 
-    label: 'Klasyczny', 
-    icon: Palette, 
-    themeColor: 'var(--theme-classic)',
-    description: 'Standardowe kolorowanki'
-  },
-  { 
-    id: 'Języki', 
-    label: 'Języki', 
-    icon: BookA, 
-    themeColor: 'var(--theme-lang)',
-    description: 'Nauka słówek PL/ENG'
-  },
-  { 
-    id: 'Matematyka', 
-    label: 'Matematyka', 
-    icon: Calculator, 
-    themeColor: 'var(--theme-math)',
-    description: 'Działania i cyfry'
-  }
+// --- EDUCATIONAL PROMPTS ---
+
+const POLSKI_PROMPTS = ['Literka A jak Aligator', 'Smok Wawelski', 'Syrenka Warszawska', 'Pan Twardowski na kogucie', 'Złota Kaczka', 'Polskie góry Tatry', 'Bocian na łące', 'Orzeł Biały'];
+const MATH_PROMPTS = ['3 jabłka i 2 gruszki', 'geometryczny robot z trójkątów', 'sowa licząca gwiazdy', 'cyfry od 1 do 9 na balonach', 'sklepik z cenami'];
+const NATURE_PROMPTS = ['Cykl życia motyla', 'Cztery pory roku na jednym drzewie', 'Obieg wody w przyrodzie', 'Las liściasty i jego mieszkańcy', 'Budowa kwiatu', 'Zwierzęta leśne', 'Segregacja śmieci'];
+const ENGLISH_PROMPTS = ['Kot / Cat', 'Pies / Dog', 'Dom / House', 'Szkoła / School', 'Rodzina / Family', 'Kolory / Colors', 'Owoce / Fruits', 'Pogoda / Weather'];
+const MUSIC_PROMPTS = ['Klucz wiolinowy i nutki', 'Gitara i perkusja', 'Orkiestra zwierząt', 'Fortepian z klawiszami', 'Dzieci śpiewające piosenkę', 'Trąbka i saksofon'];
+const ART_PROMPTS = ['Paleta malarza z farbami', 'Martwa natura z owocami', 'Wielobarwna mozaika', 'Abstrakcyjne kształty', 'Dzieci malujące obraz', 'Rzeźba z gliny'];
+const PHYSICS_PROMPTS = ['Magnes przyciągający metal', 'Tęcza i pryzmat (światło)', 'Równoważnia (dźwignia)', 'Rakieta startująca w kosmos', 'Balon na ogrzane powietrze', 'Koła zębate zegara'];
+
+export const SUBJECT_PROMPTS: Record<Subject, string[]> = {
+  'polski': POLSKI_PROMPTS,
+  'matematyka': MATH_PROMPTS,
+  'przyroda': NATURE_PROMPTS,
+  'angielski': ENGLISH_PROMPTS,
+  'muzyka': MUSIC_PROMPTS,
+  'plastyka': ART_PROMPTS,
+  'fizyka': PHYSICS_PROMPTS
+};
+
+// --- CONFIGS ---
+
+export const SUBJECTS_CONFIG: SubjectConfig[] = [
+  { id: 'angielski', label: 'Angielski', icon: Languages, themeColor: '#4f46e5', bgColor: '#eef2ff' },
+  { id: 'matematyka', label: 'Matematyka', icon: Calculator, themeColor: '#059669', bgColor: '#ecfdf5' },
+  { id: 'polski', label: 'J. Polski', icon: BookA, themeColor: '#dc2626', bgColor: '#fef2f2' },
+  { id: 'przyroda', label: 'Przyroda', icon: Sprout, themeColor: '#65a30d', bgColor: '#f7fee7' },
+  { id: 'muzyka', label: 'Muzyka', icon: Music, themeColor: '#db2777', bgColor: '#fdf2f8' },
+  { id: 'plastyka', label: 'Plastyka', icon: Palette, themeColor: '#9333ea', bgColor: '#faf5ff' },
+  { id: 'fizyka', label: 'Fizyka', icon: Atom, themeColor: '#0891b2', bgColor: '#ecfeff' },
 ];
 
-export const EXAMPLE_COLORINGS: Record<EducationalMode, { label: string, prompt: string, icon: any }[]> = {
-  'Brak': [
-    { label: 'Wesoły robot', prompt: 'wesoły robot bawiący się z psem', icon: Bot },
-    { label: 'Zamek na chmurze', prompt: 'zamek księżniczki na chmurze', icon: Castle },
-    { label: 'Kosmiczna podróż', prompt: 'kosmiczny statek lecący między planetami', icon: Rocket },
-    { label: 'Podwodny świat', prompt: 'podwodny świat z kolorowymi rybkami', icon: Fish },
-  ],
-  'Języki': [
+export const MATH_OPERATIONS: { id: MathOperation, label: string, icon: any }[] = [
+  { id: 'add_sub_10', label: 'Dodawanie do 10', icon: Plus },
+  { id: 'add_sub_20', label: 'Dodawanie do 20', icon: Hash },
+  { id: 'multiplication', label: 'Mnożenie', icon: MultiplyIcon },
+  { id: 'shapes', label: 'Figury', icon: Shapes },
+];
+
+// --- EXAMPLES ---
+
+const CLASSIC_EXAMPLES = [
+  { label: 'Wesoły robot', prompt: 'wesoły robot bawiący się z psem', icon: Bot },
+  { label: 'Zamek na chmurze', prompt: 'zamek księżniczki na chmurze', icon: Castle },
+  { label: 'Kosmiczna podróż', prompt: 'kosmiczny statek lecący między planetami', icon: Rocket },
+  { label: 'Podwodny świat', prompt: 'podwodny świat z kolorowymi rybkami', icon: Fish },
+];
+
+export const EXAMPLE_COLORINGS: Record<Subject | 'classic', { label: string, prompt: string, icon: any }[]> = {
+  'classic': CLASSIC_EXAMPLES,
+  'angielski': [
     { label: 'Pies / Dog', prompt: 'wesoły pies biegnący za piłką', icon: Dog },
     { label: 'Dom / House', prompt: 'mały domek z ogródkiem', icon: Castle },
     { label: 'Jabłko / Apple', prompt: 'duże czerwone jabłko na stole', icon: Apple },
     { label: 'Kot / Cat', prompt: 'kot śpiący na poduszce', icon: PawPrint },
   ],
-  'Matematyka': [
+  'matematyka': [
     { label: 'Dodawanie', prompt: 'dwie wesołe żabki na liściu lilii wodnej', icon: Calculator },
     { label: 'Liczby 1-5', prompt: 'pięć balonów lecących w niebo', icon: Hash },
     { label: 'Proste figury', prompt: 'robot zbudowany z kwadratów i trójkątów', icon: Bot },
-    { label: 'Odejmowanie', prompt: 'trzy ptaszki siedzące na gałęzi', icon: Sprout },
+    { label: 'Mnożenie', prompt: 'pudełka z cukierkami ułożone równo na półce', icon: LayoutGrid },
+  ],
+  'polski': [
+    { label: 'Literka A', prompt: 'Wielka litera A i aligator', icon: BookA },
+    { label: 'Smok Wawelski', prompt: 'Smok Wawelski ziejący ogniem pod zamkiem', icon: Castle },
+    { label: 'Syrenka', prompt: 'Syrenka Warszawska nad rzeką Wisłą', icon: Fish },
+    { label: 'Ortografia', prompt: 'Góra i chmura (wyrazy z Ó i U)', icon: Feather },
+  ],
+  'przyroda': [
+    { label: 'Las', prompt: 'Las liściasty z grzybami i wiewiórką', icon: Leaf },
+    { label: 'Pory roku', prompt: 'Drzewo podzielone na cztery pory roku', icon: Sprout },
+    { label: 'Segregacja', prompt: 'Kolorowe kosze na śmieci i recykling', icon: Sparkles },
+    { label: 'Woda', prompt: 'Obieg wody: chmury, deszcz, rzeka, morze', icon: Globe },
+  ],
+  'muzyka': [
+    { label: 'Instrumenty', prompt: 'Gitara, trąbka i bębenek', icon: Music },
+    { label: 'Klucz wiolinowy', prompt: 'Duży klucz wiolinowy i nutki na pięciolinii', icon: Feather },
+    { label: 'Orkiestra', prompt: 'Zwierzęta grające w orkiestrze', icon: Music },
+    { label: 'Pianino', prompt: 'Klawisze pianina z bliska', icon: LayoutGrid },
+  ],
+  'plastyka': [
+    { label: 'Paleta barw', prompt: 'Paleta malarska z pędzlami', icon: Palette },
+    { label: 'Martwa natura', prompt: 'Misa z owocami na stole', icon: Apple },
+    { label: 'Mozaika', prompt: 'Wzór mozaiki z geometrycznych kształtów', icon: Shapes },
+    { label: 'Sztuka', prompt: 'Sztaluga z pustym płótnem w pracowni', icon: Palette },
+  ],
+  'fizyka': [
+    { label: 'Magnes', prompt: 'Magnes podkowiasty przyciągający śrubki', icon: Atom },
+    { label: 'Kosmos', prompt: 'Układ Słoneczny z planetami', icon: Orbit },
+    { label: 'Pryzmat', prompt: 'Pryzmat rozszczepiający światło na tęczę', icon: Sparkles },
+    { label: 'Maszyny', prompt: 'Prosta waga szalkowa', icon: HardHat },
   ]
 };
 

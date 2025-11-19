@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
-import { Category, LineThickness, AgeGroup, EducationalMode } from '../types';
+import { Category, LineThickness, AgeGroup, AppMode, Subject, MathOperation } from '../types';
 import { buildGenerateImagePrompt, buildImageToImagePrompt } from './promptBuilder';
 
 // Helper to initialize AI
@@ -11,12 +11,23 @@ export async function generateImage(
     category: Category,
     lineThickness: LineThickness,
     ageGroup: AgeGroup,
-    educationalMode: EducationalMode
+    appMode: AppMode,
+    subject: Subject,
+    mathOperation?: MathOperation,
+    customVocabulary?: string
 ): Promise<string> {
   const ai = getAI();
   
-  // Structured prompt from builder
-  const finalPrompt = buildGenerateImagePrompt(userPrompt, category, lineThickness, ageGroup, educationalMode);
+  const finalPrompt = buildGenerateImagePrompt(
+      userPrompt, 
+      category, 
+      lineThickness, 
+      ageGroup, 
+      appMode, 
+      subject,
+      mathOperation, 
+      customVocabulary
+  );
 
   try {
     const response = await ai.models.generateContent({
@@ -53,11 +64,21 @@ export async function generateColoringPageFromImage(
     mimeType: string,
     lineThickness: LineThickness,
     ageGroup: AgeGroup,
-    educationalMode: EducationalMode
+    appMode: AppMode,
+    subject: Subject,
+    mathOperation?: MathOperation,
+    customVocabulary?: string
 ): Promise<string> {
   const ai = getAI();
 
-  const finalPrompt = buildImageToImagePrompt(lineThickness, ageGroup, educationalMode);
+  const finalPrompt = buildImageToImagePrompt(
+      lineThickness, 
+      ageGroup, 
+      appMode, 
+      subject,
+      mathOperation, 
+      customVocabulary
+  );
 
   const imagePart = {
     inlineData: {

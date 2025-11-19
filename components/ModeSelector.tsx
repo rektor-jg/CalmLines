@@ -1,36 +1,91 @@
 
 import React from 'react';
-import { MODES_CONFIG } from '../constants';
-import { EducationalMode } from '../types';
+import { SUBJECTS_CONFIG } from '../constants';
+import { AppMode, Subject } from '../types';
+import { Palette, GraduationCap } from 'lucide-react';
 
 interface ModeSelectorProps {
-  currentMode: EducationalMode;
-  onModeChange: (mode: EducationalMode) => void;
+  currentAppMode: AppMode;
+  onAppModeChange: (mode: AppMode) => void;
+  currentSubject: Subject;
+  onSubjectChange: (subject: Subject) => void;
 }
 
-export const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, onModeChange }) => {
+export const ModeSelector: React.FC<ModeSelectorProps> = ({ 
+  currentAppMode, 
+  onAppModeChange,
+  currentSubject,
+  onSubjectChange
+}) => {
   return (
-    <div className="flex justify-center mb-8">
-      <div className="bg-white/60 backdrop-blur-xl border border-white/50 p-1.5 rounded-full shadow-lg flex space-x-1 sm:space-x-2 max-w-full overflow-x-auto">
-        {MODES_CONFIG.map((mode) => {
-          const Icon = mode.icon;
-          const isActive = currentMode === mode.id;
-          
-          return (
-            <button
-              key={mode.id}
-              onClick={() => onModeChange(mode.id)}
-              className={`
-                relative px-4 py-2 rounded-full flex items-center space-x-2 transition-all duration-300 outline-none whitespace-nowrap
-                ${isActive ? 'bg-white shadow-md text-black scale-105' : 'text-gray-500 hover:text-gray-800 hover:bg-white/40'}
-              `}
-            >
-              <Icon className={`w-5 h-5 ${isActive ? 'text-[var(--theme-color)]' : ''}`} />
-              <span className={`text-sm font-semibold ${isActive ? 'text-black' : ''}`}>{mode.label}</span>
-            </button>
-          );
-        })}
+    <div className="w-full flex flex-col items-center mb-6 space-y-5 animate-fade-in">
+      
+      {/* Top Tabs: Classic vs Educational */}
+      <div className="bg-white/80 backdrop-blur-lg p-1.5 rounded-full shadow-sm border border-gray-200/60 flex space-x-1">
+        <button
+          onClick={() => onAppModeChange('classic')}
+          className={`
+            flex items-center space-x-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300
+            ${currentAppMode === 'classic' 
+              ? 'bg-black text-white shadow-md' 
+              : 'text-gray-500 hover:text-black hover:bg-gray-100'}
+          `}
+        >
+          <Palette className="w-4 h-4" />
+          <span>Klasyczny</span>
+        </button>
+        
+        <button
+          onClick={() => onAppModeChange('educational')}
+          className={`
+            flex items-center space-x-2 px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300
+            ${currentAppMode === 'educational' 
+              ? 'bg-blue-600 text-white shadow-md' 
+              : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'}
+          `}
+        >
+          <GraduationCap className="w-4 h-4" />
+          <span>Edukacyjny</span>
+        </button>
       </div>
+
+      {/* Sub-menu: Subjects (Only for Educational) */}
+      {currentAppMode === 'educational' && (
+        <div className="w-full max-w-4xl px-4 pt-4 pb-2 flex justify-center animate-fade-in">
+           <div className="flex flex-wrap justify-center gap-3">
+             {SUBJECTS_CONFIG.map((subject) => {
+               const Icon = subject.icon;
+               const isActive = currentSubject === subject.id;
+               
+               return (
+                 <button
+                   key={subject.id}
+                   onClick={() => onSubjectChange(subject.id)}
+                   className={`
+                     flex flex-col items-center justify-center p-3 min-w-[90px] rounded-2xl border-2 transition-all duration-300 group
+                     ${isActive 
+                        ? 'bg-white scale-105 shadow-md' 
+                        : 'bg-white/60 border-transparent hover:bg-white hover:border-gray-100 hover:scale-[1.02]'}
+                   `}
+                   style={{ 
+                     borderColor: isActive ? subject.themeColor : 'transparent'
+                   }}
+                 >
+                    <div 
+                      className={`p-2.5 rounded-full mb-2 transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`}
+                      style={{ backgroundColor: isActive ? subject.themeColor : subject.bgColor }}
+                    >
+                      <Icon className="w-5 h-5" style={{ color: isActive ? 'white' : subject.themeColor }} />
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-wide ${isActive ? 'text-black' : 'text-gray-400 group-hover:text-gray-500'}`}>
+                      {subject.label}
+                    </span>
+                 </button>
+               );
+             })}
+           </div>
+        </div>
+      )}
     </div>
   );
 };
