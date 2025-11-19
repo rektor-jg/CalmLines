@@ -63,81 +63,80 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full pb-20"> {/* Added padding for scrolling */}
+    <div className="flex flex-col h-full pb-20"> 
        
        {/* Configuration Section */}
        <div className="space-y-6 mb-8">
-          
-          {/* Educational Mode Specific Options */}
-          {options.appMode === 'educational' && options.subject === 'angielski' && (
-             <div className="space-y-2 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100">
-                <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-wider px-1">Słowo do nauki</h3>
-                <input 
-                  type="text"
-                  value={options.customVocabulary || ''}
-                  onChange={(e) => handleOptionChange('customVocabulary', e.target.value)}
-                  placeholder="np. Dom / House"
-                  className="w-full p-3 text-sm border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white text-indigo-900 placeholder-indigo-300 transition-shadow duration-200"
-                />
-                <p className="text-[10px] text-indigo-400 px-1 leading-tight">
-                  Wpisz słowo, a stworzymy obrazek specjalnie dla niego.
-                </p>
-             </div>
-          )}
+            
+            {/* Educational Mode Specific Options */}
+            {options.appMode === 'educational' && options.subject === 'angielski' && (
+               <div className="space-y-2 bg-indigo-50/50 p-3 rounded-2xl border border-indigo-100">
+                  <h3 className="text-xs font-bold text-indigo-600 uppercase tracking-wider px-1">Słowo do nauki</h3>
+                  <input 
+                    type="text"
+                    value={options.customVocabulary || ''}
+                    onChange={(e) => handleOptionChange('customVocabulary', e.target.value)}
+                    placeholder="np. Dom / House"
+                    className="w-full p-3 text-sm border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white text-indigo-900 placeholder-indigo-300 transition-shadow duration-200"
+                  />
+                  <p className="text-[10px] text-indigo-400 px-1 leading-tight">
+                    Wpisz słowo, a stworzymy obrazek specjalnie dla niego.
+                  </p>
+               </div>
+            )}
 
-
-          {/* Age Group */}
-          <div className="space-y-2">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Wiek dziecka</h3>
-            <div className="flex p-1 bg-gray-100/80 rounded-xl border border-gray-200/50">
-              {AGE_GROUPS.map(age => {
-                 const isActive = options.ageGroup === age;
-                 return (
-                  <button 
-                    key={age} 
-                    onClick={() => handleOptionChange('ageGroup', age)} 
-                    disabled={isLoading}
-                    className={`
-                      flex-1 py-2.5 text-xs font-bold rounded-lg transition-all duration-200
-                      ${isActive 
-                        ? 'bg-white text-black shadow-sm ring-1 ring-black/5 scale-[1.02]' 
-                        : 'text-gray-500 hover:text-black hover:bg-white/50'}
-                    `}
-                  >
-                    {age.replace(' lata', '').replace(' lat', '')}
-                  </button>
-                 );
-              })}
+            {/* Age Group */}
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Wiek dziecka</h3>
+              <div className="flex p-1 bg-gray-100/80 rounded-xl border border-gray-200/50">
+                {AGE_GROUPS.map(age => {
+                   const isActive = options.ageGroup === age;
+                   return (
+                    <button 
+                      key={age} 
+                      onClick={() => handleOptionChange('ageGroup', age)} 
+                      disabled={isLoading}
+                      className={`
+                        flex-1 py-2.5 text-xs font-bold rounded-lg transition-all duration-200
+                        ${isActive 
+                          ? 'bg-white text-black shadow-sm ring-1 ring-black/5 scale-[1.02]' 
+                          : 'text-gray-500 hover:text-black hover:bg-white/50'}
+                      `}
+                    >
+                      {age.replace(' lata', '').replace(' lat', '')}
+                    </button>
+                   );
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Line Thickness */}
-          <div className="space-y-2">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Linie</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {LINE_THICKNESSES.map(thickness => {
-                const isActive = options.lineThickness === thickness;
-                return (
-                  <button 
-                    key={thickness} 
-                    onClick={() => handleOptionChange('lineThickness', thickness)} 
-                    disabled={isLoading} 
-                    className={`
-                      py-3 px-4 text-sm font-bold rounded-xl border transition-all duration-200
-                      ${isActive 
-                        ? 'border-black bg-black text-white shadow-md scale-[1.02]' 
-                        : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-black'}
-                    `}
-                  >
-                    {thickness}
-                  </button>
-                );
-              })}
+            {/* Line Thickness */}
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-1">Linie</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {LINE_THICKNESSES.map(thickness => {
+                  const isActive = options.lineThickness === thickness;
+                  return (
+                    <button 
+                      key={thickness} 
+                      onClick={() => handleOptionChange('lineThickness', thickness)} 
+                      disabled={isLoading} 
+                      className={`
+                        py-3 px-4 text-sm font-bold rounded-xl border transition-all duration-200
+                        ${isActive 
+                          ? 'border-black bg-black text-white shadow-md scale-[1.02]' 
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-black'}
+                      `}
+                    >
+                      {thickness}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
        </div>
 
-       {/* Categories Grid - Show only if NOT in educational mode */}
+       {/* Categories Grid - Show only if in classic mode */}
        {options.appMode === 'classic' && (
          <div className="mb-8">
            <div className="flex justify-between items-center mb-3 px-1">
@@ -149,7 +148,6 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({
               
               {showMore && MORE_CATEGORIES.map(name => renderCategoryCard(name))}
 
-              {/* Show More / Less Button as a Card */}
               <button 
                  onClick={() => setShowMore(!showMore)}
                  className="flex flex-col items-center justify-center p-2 rounded-xl border border-dashed border-gray-300 text-gray-500 hover:text-black hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 hover:scale-[1.02]"
@@ -169,10 +167,9 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({
          </div>
       )}
 
-      {/* Divider */}
       <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-6" />
 
-      {/* History Section */}
+      {/* History Section - Always Visible */}
       <div className="flex-grow">
         <HistorySection
           history={history}
@@ -181,10 +178,4 @@ export const ColoringOptions: React.FC<ColoringOptionsProps> = ({
           isSelectionMode={isSelectionMode}
           toggleSelectionMode={toggleSelectionMode}
           selectedImages={selectedImages}
-          onDownloadBooklet={onDownloadBooklet}
-        />
-      </div>
-
-    </div>
-  );
-};
+          
